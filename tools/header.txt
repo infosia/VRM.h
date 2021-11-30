@@ -1,0 +1,19 @@
+/**
+ * VRM.h - C++ header-only library for simple serialization/deserialization of VRM 1.0
+ *
+ * Distributed under the MIT License, see notice at the end of this file.
+ *
+ */
+#pragma once
+
+#include <string>
+#include <vector>
+#include <unordered_map>
+
+#ifndef JSON_USE_IMPLICIT_CONVERSIONS
+#define JSON_USE_IMPLICIT_CONVERSIONS 0
+#endif
+
+#include <nlohmann/json.hpp>
+#include <fx/gltf.h>
+
