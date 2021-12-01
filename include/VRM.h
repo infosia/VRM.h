@@ -1,6 +1,6 @@
 /**
  * VRM.h - C++ header-only library for simple serialization/deserialization of
- * VRM 1.0
+ * VRM 0.x and 1.0
  *
  * Distributed under the MIT License, see notice at the end of this file.
  *
@@ -23,46 +23,46 @@
 namespace VRM_0_0 {
 struct SecondaryanimationSpring {
   std::string comment;
-  float stiffiness;
-  float gravityPower;
+  float stiffiness{};
+  float gravityPower{};
   float gravityDir[3];
-  float dragForce;
-  uint32_t center;
-  float hitRadius;
-  std::vector<uint32_t> bones;
-  std::vector<uint32_t> colliderGroups;
+  float dragForce{};
+  uint32_t center{};
+  float hitRadius{};
+  std::vector<uint32_t> bones{};
+  std::vector<uint32_t> colliderGroups{};
   nlohmann::json extensionsAndExtras{};
 };
 
 struct SecondaryanimationCollidergroup {
-  uint32_t node;
+  uint32_t node{};
   struct Collider {
     float offset[3];
-    float radius;
+    float radius{};
     nlohmann::json extensionsAndExtras{};
   };
 
-  std::vector<Collider> colliders;
+  std::vector<Collider> colliders{};
   nlohmann::json extensionsAndExtras{};
 };
 
 struct Secondaryanimation {
-  std::vector<SecondaryanimationSpring> boneGroups;
-  std::vector<SecondaryanimationCollidergroup> colliderGroups;
+  std::vector<SecondaryanimationSpring> boneGroups{};
+  std::vector<SecondaryanimationCollidergroup> colliderGroups{};
   nlohmann::json extensionsAndExtras{};
 };
 
 struct BlendshapeBind {
-  uint32_t mesh;
-  uint32_t index;
-  float weight;
+  uint32_t mesh{};
+  uint32_t index{};
+  float weight{};
   nlohmann::json extensionsAndExtras{};
 };
 
 struct BlendshapeMaterialbind {
   std::string materialName;
   std::string propertyName;
-  std::vector<float> targetValue;
+  std::vector<float> targetValue{};
   nlohmann::json extensionsAndExtras{};
 };
 
@@ -88,35 +88,37 @@ struct BlendshapeGroup {
     Blink_l,
     Blink_r
   };
-  std::vector<BlendshapeBind> binds;
-  std::vector<BlendshapeMaterialbind> materialValues;
-  bool isBinary;
+  PresetName presetName;
+  std::vector<BlendshapeBind> binds{};
+  std::vector<BlendshapeMaterialbind> materialValues{};
+  bool isBinary{};
   nlohmann::json extensionsAndExtras{};
 };
 
 struct Blendshape {
-  std::vector<BlendshapeGroup> blendShapeGroups;
+  std::vector<BlendshapeGroup> blendShapeGroups{};
   nlohmann::json extensionsAndExtras{};
 };
 
 struct FirstpersonDegreemap {
-  std::vector<float> curve;
-  float xRange;
-  float yRange;
+  std::vector<float> curve{};
+  float xRange{};
+  float yRange{};
   nlohmann::json extensionsAndExtras{};
 };
 
 struct FirstpersonMeshannotation {
-  uint32_t mesh;
+  uint32_t mesh{};
   std::string firstPersonFlag;
   nlohmann::json extensionsAndExtras{};
 };
 
 struct Firstperson {
-  uint32_t firstPersonBone;
+  uint32_t firstPersonBone{};
   float firstPersonBoneOffset[3];
-  std::vector<FirstpersonMeshannotation> meshAnnotations;
+  std::vector<FirstpersonMeshannotation> meshAnnotations{};
   enum class LookAtTypeName : uint8_t { Bone, BlendShape };
+  LookAtTypeName lookAtTypeName;
   FirstpersonDegreemap lookAtHorizontalInner;
   FirstpersonDegreemap lookAtHorizontalOuter;
   FirstpersonDegreemap lookAtVerticalDown;
@@ -182,37 +184,38 @@ struct HumanoidBone {
     RightLittleDistal,
     UpperChest
   };
-  uint32_t node;
-  bool useDefaultValues;
+  Bone bone;
+  uint32_t node{};
+  bool useDefaultValues{};
   float min[3];
   float max[3];
   float center[3];
-  float axisLength;
+  float axisLength{};
   nlohmann::json extensionsAndExtras{};
 };
 
 struct Humanoid {
-  std::vector<HumanoidBone> humanBones;
-  float armStretch;
-  float legStretch;
-  float upperArmTwist;
-  float lowerArmTwist;
-  float upperLegTwist;
-  float lowerLegTwist;
-  float feetSpacing;
-  bool hasTranslationDoF;
+  std::vector<HumanoidBone> humanBones{};
+  float armStretch{};
+  float legStretch{};
+  float upperArmTwist{};
+  float lowerArmTwist{};
+  float upperLegTwist{};
+  float lowerLegTwist{};
+  float feetSpacing{};
+  bool hasTranslationDoF{};
   nlohmann::json extensionsAndExtras{};
 };
 
 struct Material {
   std::string name;
   std::string shader;
-  uint32_t renderQueue;
-  std::unordered_map<std::string, float> floatProperties;
-  std::unordered_map<std::string, float[4]> vectorProperties;
-  std::unordered_map<std::string, uint32_t> textureProperties;
-  std::unordered_map<std::string, bool> keywordMap;
-  std::unordered_map<std::string, std::string> tagMap;
+  uint32_t renderQueue{};
+  std::unordered_map<std::string, float> floatProperties{};
+  std::unordered_map<std::string, float[4]> vectorProperties{};
+  std::unordered_map<std::string, uint32_t> textureProperties{};
+  std::unordered_map<std::string, bool> keywordMap{};
+  std::unordered_map<std::string, std::string> tagMap{};
   nlohmann::json extensionsAndExtras{};
 };
 
@@ -222,15 +225,19 @@ struct Meta {
   std::string author;
   std::string contactInformation;
   std::string reference;
-  uint32_t texture;
+  uint32_t texture{};
   enum class AllowedUserName : uint8_t {
     OnlyAuthor,
     ExplicitlyLicensedPerson,
     Everyone
   };
+  AllowedUserName allowedUserName;
   enum class ViolentUssageName : uint8_t { Disallow, Allow };
+  ViolentUssageName violentUssageName;
   enum class SexualUssageName : uint8_t { Disallow, Allow };
+  SexualUssageName sexualUssageName;
   enum class CommercialUssageName : uint8_t { Disallow, Allow };
+  CommercialUssageName commercialUssageName;
   std::string otherPermissionUrl;
   enum class LicenseName : uint8_t {
     Redistribution_Prohibited,
@@ -243,6 +250,7 @@ struct Meta {
     CC_BY_NC_ND,
     Other
   };
+  LicenseName licenseName;
   std::string otherLicenseUrl;
   nlohmann::json extensionsAndExtras{};
 };
@@ -255,7 +263,7 @@ struct Vrm {
   Firstperson firstPerson;
   Blendshape blendShapeMaster;
   Secondaryanimation secondaryAnimation;
-  std::vector<Material> materialProperties;
+  std::vector<Material> materialProperties{};
   nlohmann::json extensionsAndExtras{};
 };
 } // namespace VRM_0_0
@@ -265,14 +273,14 @@ struct Vrm {
 
 namespace VRM_1_0 {
 struct TextureInfo {
-  uint32_t index;
-  uint32_t texCoord;
+  uint32_t index{};
+  uint32_t texCoord{};
   nlohmann::json extensionsAndExtras{};
 };
 
 struct ShadingShiftTextureInfo {
-  uint32_t index;
-  uint32_t texCoord;
+  uint32_t index{};
+  uint32_t texCoord{};
   float scale = 1.f;
   nlohmann::json extensionsAndExtras{};
 };
@@ -280,32 +288,32 @@ struct ShadingShiftTextureInfo {
 enum class ObjectSpace : uint8_t { Model, Local };
 struct ColliderGroup {
   std::string name;
-  std::vector<uint32_t> colliders;
+  std::vector<uint32_t> colliders{};
   nlohmann::json extensionsAndExtras{};
 };
 
 struct SpringBoneJoint {
-  uint32_t node;
-  float hitRadius;
+  uint32_t node{};
+  float hitRadius{};
   float stiffness = 1.f;
-  float gravityPower;
-  std::vector<float> gravityDir;
+  float gravityPower{};
+  std::vector<float> gravityDir = {0, -1, 0};
   float dragForce = 0.5f;
   nlohmann::json extensionsAndExtras{};
 };
 
 struct ColliderShape {
   struct Sphere {
-    std::vector<float> offset;
-    float radius;
+    std::vector<float> offset = {0, 0, 0};
+    float radius{};
     nlohmann::json extensionsAndExtras{};
   };
 
   Sphere sphere;
   struct Capsule {
-    std::vector<float> offset;
-    float radius;
-    std::vector<float> tail;
+    std::vector<float> offset = {0, 0, 0};
+    float radius{};
+    std::vector<float> tail = {0, 0, 0};
     nlohmann::json extensionsAndExtras{};
   };
 
@@ -314,7 +322,7 @@ struct ColliderShape {
 };
 
 struct MaterialColorBind {
-  uint32_t material;
+  uint32_t material{};
   enum class MaterialColorType : uint8_t {
     Color,
     EmissionColor,
@@ -322,120 +330,126 @@ struct MaterialColorBind {
     RimColor,
     OutlineColor
   };
-  std::vector<float> targetValue;
+  MaterialColorType type;
+  std::vector<float> targetValue{};
   nlohmann::json extensionsAndExtras{};
 };
 
 struct MorphTargetBind {
-  uint32_t node;
-  uint32_t index;
-  float weight;
+  uint32_t node{};
+  uint32_t index{};
+  float weight{};
   nlohmann::json extensionsAndExtras{};
 };
 
 struct TextureTransformBind {
-  uint32_t material;
-  std::vector<float> scale;
-  std::vector<float> offset;
+  uint32_t material{};
+  std::vector<float> scale = {1, 1};
+  std::vector<float> offset = {0, 0};
   nlohmann::json extensionsAndExtras{};
 };
 
 struct MeshAnnotation {
-  uint32_t node;
+  uint32_t node{};
   enum class FirstPersonType : uint8_t {
     Auto,
     Both,
     ThirdPersonOnly,
     FirstPersonOnly
   };
+  FirstPersonType type;
   nlohmann::json extensionsAndExtras{};
 };
 
 struct HumanBone {
-  uint32_t node;
+  uint32_t node{};
   nlohmann::json extensionsAndExtras{};
 };
 
 struct LookAtRangeMap {
-  float inputMaxValue;
-  float outputScale;
+  float inputMaxValue{};
+  float outputScale{};
   nlohmann::json extensionsAndExtras{};
 };
 
 struct Meta {
   std::string name;
   std::string version;
-  std::vector<std::string> authors;
+  std::vector<std::string> authors{};
   std::string copyrightInformation;
   std::string contactInformation;
-  std::vector<std::string> references;
+  std::vector<std::string> references{};
   std::string thirdPartyLicenses;
-  uint32_t thumbnailImage;
+  uint32_t thumbnailImage{};
   std::string licenseUrl;
   enum class AvatarPermissionType : uint8_t {
     OnlyAuthor,
     OnlySeparatelyLicensedPerson,
     Everyone
   };
-  bool allowExcessivelyViolentUsage;
-  bool allowExcessivelySexualUsage;
+  AvatarPermissionType avatarPermission = AvatarPermissionType::OnlyAuthor;
+  bool allowExcessivelyViolentUsage{};
+  bool allowExcessivelySexualUsage{};
   enum class CommercialUsageType : uint8_t {
     PersonalNonProfit,
     PersonalProfit,
     Corporation
   };
-  bool allowPoliticalOrReligiousUsage;
-  bool allowAntisocialOrHateUsage;
+  CommercialUsageType commercialUsage = CommercialUsageType::PersonalNonProfit;
+  bool allowPoliticalOrReligiousUsage{};
+  bool allowAntisocialOrHateUsage{};
   enum class CreditNotationType : uint8_t { Required, Unnecessary };
-  bool allowRedistribution;
+  CreditNotationType creditNotation = CreditNotationType::Required;
+  bool allowRedistribution{};
   enum class ModificationType : uint8_t {
     Prohibited,
     AllowModification,
     AllowModificationRedistribution
   };
+  ModificationType modification = ModificationType::Prohibited;
   std::string otherLicenseUrl;
   nlohmann::json extensionsAndExtras{};
 };
 
 struct AimConstraint {
-  uint32_t source;
+  uint32_t source{};
   ObjectSpace sourceSpace;
   ObjectSpace destinationSpace;
-  std::vector<float> aimVector;
-  std::vector<float> upVector;
-  std::vector<bool> freezeAxes;
+  std::vector<float> aimVector = {0, 0, 1};
+  std::vector<float> upVector = {0, 0, 1};
+  std::vector<bool> freezeAxes = {true, true};
   float weight = 1.f;
   nlohmann::json extensionsAndExtras{};
 };
 
 struct PositionConstraint {
-  uint32_t source;
+  uint32_t source{};
   ObjectSpace sourceSpace;
   ObjectSpace destinationSpace;
-  std::vector<bool> freezeAxes;
+  std::vector<bool> freezeAxes = {true, true, true};
   float weight = 1.f;
   nlohmann::json extensionsAndExtras{};
 };
 
 struct RotationConstraint {
-  uint32_t source;
+  uint32_t source{};
   ObjectSpace sourceSpace;
   ObjectSpace destinationSpace;
-  std::vector<bool> freezeAxes;
+  std::vector<bool> freezeAxes = {true, true, true};
   float weight = 1.f;
   nlohmann::json extensionsAndExtras{};
 };
 
 struct Collider {
-  uint32_t node;
+  uint32_t node{};
   ColliderShape shape;
   nlohmann::json extensionsAndExtras{};
 };
 
 struct Spring {
   std::string name;
-  std::vector<SpringBoneJoint> joints;
-  std::vector<uint32_t> colliderGroups;
+  std::vector<SpringBoneJoint> joints{};
+  std::vector<uint32_t> colliderGroups{};
   nlohmann::json extensionsAndExtras{};
 };
 
@@ -507,18 +521,21 @@ struct Constraint {
 
 struct SpringBone {
   std::string specVersion;
-  std::vector<Collider> colliders;
-  std::vector<ColliderGroup> colliderGroups;
-  std::vector<Spring> springs;
+  std::vector<Collider> colliders{};
+  std::vector<ColliderGroup> colliderGroups{};
+  std::vector<Spring> springs{};
   nlohmann::json extensionsAndExtras{};
 };
 
 struct Expression {
-  std::vector<MorphTargetBind> morphTargetBinds;
-  std::vector<MaterialColorBind> materialColorBinds;
-  std::vector<TextureTransformBind> textureTransformBinds;
-  bool isBinary;
+  std::vector<MorphTargetBind> morphTargetBinds{};
+  std::vector<MaterialColorBind> materialColorBinds{};
+  std::vector<TextureTransformBind> textureTransformBinds{};
+  bool isBinary{};
   enum class ExpressionOverrideType : uint8_t { None, Block, Blend };
+  ExpressionOverrideType overrideBlink = ExpressionOverrideType::None;
+  ExpressionOverrideType overrideLookAt = ExpressionOverrideType::None;
+  ExpressionOverrideType overrideMouth = ExpressionOverrideType::None;
   nlohmann::json extensionsAndExtras{};
 };
 
@@ -550,7 +567,7 @@ struct Expressions {
 };
 
 struct FirstPerson {
-  std::vector<MeshAnnotation> meshAnnotations;
+  std::vector<MeshAnnotation> meshAnnotations{};
   nlohmann::json extensionsAndExtras{};
 };
 
@@ -560,8 +577,9 @@ struct Humanoid {
 };
 
 struct LookAt {
-  std::vector<float> offsetFromHeadBone;
+  std::vector<float> offsetFromHeadBone{};
   enum class LookAtType : uint8_t { Bone, Expression };
+  LookAtType type;
   LookAtRangeMap rangeMapHorizontalInner;
   LookAtRangeMap rangeMapHorizontalOuter;
   LookAtRangeMap rangeMapVerticalDown;
@@ -576,34 +594,35 @@ struct MaterialsHdrEmissiveMultiplier {
 
 struct MaterialsMtoon {
   std::string specVersion;
-  bool transparentWithZWrite = false;
-  uint32_t renderQueueOffsetNumber;
-  std::vector<float> shadeColorFactor;
+  bool transparentWithZWrite{};
+  uint32_t renderQueueOffsetNumber{};
+  std::vector<float> shadeColorFactor = {1, 1, 1};
   TextureInfo shadeMultiplyTexture;
-  float shadingShiftFactor;
+  float shadingShiftFactor{};
   ShadingShiftTextureInfo shadingShiftTexture;
   float shadingToonyFactor = 0.9f;
   float giEqualizationFactor = 0.9f;
-  std::vector<float> matcapFactor;
+  std::vector<float> matcapFactor = {1, 1, 1};
   TextureInfo matcapTexture;
-  std::vector<float> parametricRimColorFactor;
+  std::vector<float> parametricRimColorFactor = {0, 0, 0};
   TextureInfo rimMultiplyTexture;
-  float rimLightingMixFactor;
+  float rimLightingMixFactor{};
   float parametricRimFresnelPowerFactor = 1.f;
-  float parametricRimLiftFactor;
+  float parametricRimLiftFactor{};
   enum class OutlineWidthMode : uint8_t {
     None,
     WorldCoordinates,
     ScreenCoordinates
   };
-  float outlineWidthFactor;
+  OutlineWidthMode outlineWidthMode = OutlineWidthMode::None;
+  float outlineWidthFactor{};
   TextureInfo outlineWidthMultiplyTexture;
-  std::vector<float> outlineColorFactor;
+  std::vector<float> outlineColorFactor = {0, 0, 0};
   float outlineLightingMixFactor = 1.f;
   TextureInfo uvAnimationMaskTexture;
-  float uvAnimationScrollXSpeedFactor;
-  float uvAnimationScrollYSpeedFactor;
-  float uvAnimationRotationSpeedFactor;
+  float uvAnimationScrollXSpeedFactor{};
+  float uvAnimationScrollYSpeedFactor{};
+  float uvAnimationRotationSpeedFactor{};
   nlohmann::json extensionsAndExtras{};
 };
 

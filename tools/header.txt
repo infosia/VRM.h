@@ -1,5 +1,6 @@
 /**
- * VRM.h - C++ header-only library for simple serialization/deserialization of VRM 1.0
+ * VRM.h - C++ header-only library for simple serialization/deserialization of
+ * VRM 0.x and 1.0
  *
  * Distributed under the MIT License, see notice at the end of this file.
  *

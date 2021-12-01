@@ -21,6 +21,7 @@ let global_enums = {};
 supportedVersions.forEach(version => {
 	out_structs[version] = [];
 	global_references[version] = {};
+	global_enums[version] = {};
 })
 
 function sanitize(str) {
@@ -63,10 +64,10 @@ function is_vec3(items) {
 
 function write_enum(json, version, title) {
 	let classname = capitalize(sanitize(title));
-	if (global_enums[classname]) {
+	if (global_enums[version][classname]) {
 		return;	
 	}
-	global_enums[classname] = true;
+	global_enums[version][classname] = true;
 
 	out_structs[version].push(indent + 'enum class ' + classname + ' : uint8_t {');
 	out_structs[version].push(json.enum.map(value => {
@@ -110,18 +111,22 @@ function get_object_type(name, json, allOf, version) {
 	return undefined;
 }
 
-function set(properties, primitive) {
+function set(properties, type) {
 	let value = properties['default'];
 	if (value) {
-		if (primitive == 'float') {
+		if (type == 'float') {
 			if (value.toString().indexOf('.') == -1)
 				value += '.';
-			value += 'f';
+			return ' = ' + value + 'f';
+		} else if (properties.enum) {
+			return ' = ' + properties.title + '::' + capitalize(value);
+		} else if (type == 'string') {
+			return ' = ' + '"' + value + '"';
+		} else if (type == 'array') {
+			return ' = ' + JSON.stringify(value).replace('[', '{').replace(']', '}');
 		}
-
-		return ' = ' + value;
 	}
-	return '';
+	return type == 'string' ? '' : '{}';
 }
 
 function parse(json, file, version, parent) {
@@ -156,9 +161,11 @@ function parse(json, file, version, parent) {
 
 			if (type == 'string') {
 				if (properties.enum) {
-					write_enum(properties, version, properties.title ? properties.title : name);
+					const enumname = capitalize(sanitize(properties.title ? properties.title : name));
+					write_enum(properties, version, enumname);
+					out_structs[version].push(indent + enumname + ' ' + name + set(properties, type) + ';');
 				} else {
-					out_structs[version].push(indent + 'std::string ' + name + set(properties) + ';');
+					out_structs[version].push(indent + 'std::string ' + name + set(properties, type) + ';');
 				}
 			} else if (primitive) {
 				out_structs[version].push(indent + primitive + ' ' + name + set(properties, primitive) + ';');
@@ -167,7 +174,7 @@ function parse(json, file, version, parent) {
 					out_structs[version].push(indent + 'float ' + name + '[3];');
 				} else if (name == 'floatProperties' || name == 'textureProperties' || name == 'keywordMap' || name == 'vectorProperties' || name == 'tagMap') {
 					const value_type = select_native_type(name);
-					out_structs[version].push(indent + 'std::unordered_map<std::string, ' + value_type + '> ' + name + ';');
+					out_structs[version].push(indent + 'std::unordered_map<std::string, ' + value_type + '> ' + name + '{};');
 				} else if (properties) {
 					properties.title = name;
 					parse(properties, file, version, name)
@@ -188,20 +195,20 @@ function parse(json, file, version, parent) {
 					if (ref) {
 						const global_ref = global_references[version][ref];
 						if (ref == 'glTFid.schema.json') {
-							out_structs[version].push(indent + 'std::vector<uint32_t> ' + name + ';');
+							out_structs[version].push(indent + 'std::vector<uint32_t> ' + name + '{};');
 						} else if (global_ref) {
 							let classname = snake_case(sanitize(global_ref.title ? global_ref.title : ref));
-							out_structs[version].push(indent + 'std::vector<' + classname + '> ' + name + ';');
+							out_structs[version].push(indent + 'std::vector<' + classname + '> ' + name + '{};');
 						} else {
 							throw new Error('Unknown reference: ' + ref + ' for ' + name + ' in ' + file);
 						}
 					} else if (primitives) {
-						out_structs[version].push(indent + 'std::vector<' + primitives + '> ' + name + ';');
+						out_structs[version].push(indent + 'std::vector<' + primitives + '> ' + name + set(properties, type) + ';');
 					} else if (items.type == 'object') {
 						const structname = snake_case(sanitize(name)).slice(0, -1);
 						items.title = structname;
 						parse(items, file, version, name);
-						out_structs[version].push(indent + 'std::vector<' + structname + '> ' + name + ';');
+						out_structs[version].push(indent + 'std::vector<' + structname + '> ' + name + '{};');
 					} else if (items.type == 'string') {
 						out_structs[version].push(indent + 'std::vector<std::string> ' + name + ';');
 					} else {
@@ -222,7 +229,7 @@ function parse(json, file, version, parent) {
 					const global_ref = global_references[version][ref];
 					if (global_ref) {
 						if (global_ref['$id'] == 'glTFid.schema.json') {
-							out_structs[version].push(indent + 'uint32_t ' + name + ';');
+							out_structs[version].push(indent + 'uint32_t ' + name + '{};');
 						} else if (global_ref['$id'] == 'glTFProperty.schema.json') {
 							// can be ignored
 						} else if (global_ref['enum']) {
@@ -283,6 +290,10 @@ supportedVersions.forEach(version => {
 	output_stream.write(out_structs[version].join('\n'), 'utf8');
 	output_stream.write('}\n', 'utf8');
 	output_stream.write('#endif\n\n', 'utf8');
+
+	out_structs[version] = [];
+	global_references[version] = {};
+	global_enums[version] = {};
 });
 
 output_stream.write(footer, 'utf8');
