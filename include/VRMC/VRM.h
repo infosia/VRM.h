@@ -14,9 +14,9 @@
 #include <fx/gltf.h>
 #include <nlohmann/json.hpp>
 
-#ifdef USE_VRM_0_0
+#ifdef USE_VRMC_VRM_0_0
 
-namespace VRM_0_0 {
+namespace VRMC_VRM_0_0 {
 struct SecondaryanimationSpring : fx::gltf::NeverEmpty {
   std::string comment;
   float stiffiness{};
@@ -1196,12 +1196,12 @@ inline void from_json(nlohmann::json const &json, Vrm &out_value) {
   fx::gltf::detail::ReadExtensionsAndExtras(json,
                                             out_value.extensionsAndExtras);
 }
-} // namespace VRM_0_0
+} // namespace VRMC_VRM_0_0
 #endif
 
-#ifdef USE_VRM_1_0
+#ifdef USE_VRMC_VRM_1_0
 
-namespace VRM_1_0 {
+namespace VRMC_VRM_1_0 {
 struct TextureInfo : fx::gltf::NeverEmpty {
   uint32_t index{};
   uint32_t texCoord{};
@@ -2693,7 +2693,7 @@ inline void from_json(nlohmann::json const &json, Vrm &out_value) {
   fx::gltf::detail::ReadExtensionsAndExtras(json,
                                             out_value.extensionsAndExtras);
 }
-} // namespace VRM_1_0
+} // namespace VRMC_VRM_1_0
 #endif
 
 /* VRM.h is distributed under MIT license:

@@ -382,15 +382,15 @@ function parse(json, file, version, varname, parent) {
 
 const header = fs.readFileSync(path.join(__dirname, 'header.txt'), 'utf8').toString();
 const footer = fs.readFileSync(path.join(__dirname, 'footer.txt'), 'utf8').toString();
-const output_stream = fs.createWriteStream(path.join(__dirname, '..', 'include', 'vrm', 'VRM.h'), 'utf8');
+const output_stream = fs.createWriteStream(path.join(__dirname, '..', 'include', 'VRMC', 'VRM.h'), 'utf8');
 output_stream.write(header, 'utf8');
 
 supportedVersions.forEach(version => {
 
 	const v = version.replace(/\./, '_')
 
-	output_stream.write('#ifdef USE_VRM_' + v + '\n\n', 'utf8');
-	output_stream.write('namespace VRM_' + v + ' {\n', 'utf8');
+	output_stream.write('#ifdef USE_VRMC_VRM_' + v + '\n\n', 'utf8');
+	output_stream.write('namespace VRMC_VRM_' + v + ' {\n', 'utf8');
 
 	const schema_dir = path.join(basepath, version);
 	const files = fs.readdirSync(schema_dir);
