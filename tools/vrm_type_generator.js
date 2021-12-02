@@ -382,7 +382,7 @@ function parse(json, file, version, varname, parent) {
 
 const header = fs.readFileSync(path.join(__dirname, 'header.txt'), 'utf8').toString();
 const footer = fs.readFileSync(path.join(__dirname, 'footer.txt'), 'utf8').toString();
-const output_stream = fs.createWriteStream(path.join(__dirname, '..', 'include', 'VRM.h'), 'utf8');
+const output_stream = fs.createWriteStream(path.join(__dirname, '..', 'include', 'vrm', 'VRM.h'), 'utf8');
 output_stream.write(header, 'utf8');
 
 supportedVersions.forEach(version => {
