@@ -6,15 +6,15 @@
  */
 "use strict"
 
-const supportedVersions = ['0.0' ,'1.0'];
+const supportedVersions = ['0.0', '1.0'];
 
 const fs = require('fs');
 const path = require('path');
 const basepath = path.join(__dirname, '..', 'schema');
-const indent   = '\t';
-const indent2  = indent + indent;
-const indent3  = indent2 + indent;
-const indent4  = indent3 + indent;
+const indent = '\t';
+const indent2 = indent + indent;
+const indent3 = indent2 + indent;
+const indent4 = indent3 + indent;
 
 let out_structs = {};
 let out_from_json = {};
@@ -56,9 +56,9 @@ function snake_case(str) {
 }
 
 function select_native_type(type) {
-	if (type == 'string')  return 'std::string';
+	if (type == 'string') return 'std::string';
 	if (type == 'integer') return 'uint32_t';
-	if (type == 'number')  return 'float';
+	if (type == 'number') return 'float';
 	if (type == 'boolean') return 'bool';
 	if (type == 'textureProperties') return 'uint32_t';
 	if (type == 'floatProperties') return 'float';
@@ -69,14 +69,14 @@ function select_native_type(type) {
 }
 
 function is_vec3(items) {
-	return (items.properties && items.properties.x && items.properties.y && items.properties.z
-		&& items.properties.x.type == 'number' && items.properties.y.type == 'number' && items.properties.z.type == 'number');
+	return (items.properties && items.properties.x && items.properties.y && items.properties.z &&
+		items.properties.x.type == 'number' && items.properties.y.type == 'number' && items.properties.z.type == 'number');
 }
 
 function write_enum(json, version, title, parent) {
 	let classname = capitalize(sanitize(title));
 	if (global_enums[version][classname]) {
-		return;	
+		return;
 	}
 	global_enums[version][classname] = true;
 
@@ -89,10 +89,10 @@ function write_enum(json, version, title, parent) {
 
 	// from_json
 	const fq_classname = (parent ? parent + '::' : '') + classname;
-	out_from_json[version].push(indent + 'inline void from_json(nlohmann::json const & json, '
-		 + fq_classname + ' & out_value) {');
-    out_from_json[version].push(indent2 + 'std::string type = json.get<std::string>();');
-    let in_else = false;
+	out_from_json[version].push(indent + 'inline void from_json(nlohmann::json const & json, ' +
+		fq_classname + ' & out_value) {');
+	out_from_json[version].push(indent2 + 'std::string type = json.get<std::string>();');
+	let in_else = false;
 	json.enum.forEach(value => {
 		out_from_json[version].push(indent2 + (in_else ? 'else ' : '') + 'if (type == "' + value + '") {');
 		out_from_json[version].push(indent3 + 'out_value = ' + fq_classname + '::' + capitalize(value) + ';');
@@ -102,7 +102,7 @@ function write_enum(json, version, title, parent) {
 	out_from_json[version].push(indent + '}\n');
 
 	// to_json
-    out_to_json[version].push(indent + 'inline void to_json(nlohmann::json & json, '+ fq_classname + ' const & in_value) {');
+	out_to_json[version].push(indent + 'inline void to_json(nlohmann::json & json, ' + fq_classname + ' const & in_value) {');
 	out_to_json[version].push(indent2 + 'switch(in_value) {');
 	json.enum.forEach(value => {
 		out_to_json[version].push(indent3 + 'case ' + fq_classname + '::' + capitalize(value) + ':');
@@ -119,10 +119,10 @@ function start_struct_func(version, structname, parent) {
 	const fq_structname = (parent ? snake_case(sanitize(parent)) + '::' : '') + structname;
 
 	out_struct_from_json[version][structname] = [];
-    out_struct_to_json[version][structname] = [];
+	out_struct_to_json[version][structname] = [];
 
-	out_struct_from_json[version][structname].push(indent + 'inline void from_json(nlohmann::json const & json, '+ fq_structname + ' & out_value) {');
-    out_struct_to_json[version][structname].push(indent + 'inline void to_json(nlohmann::json & json, '+ fq_structname + ' const & in_value) {');
+	out_struct_from_json[version][structname].push(indent + 'inline void from_json(nlohmann::json const & json, ' + fq_structname + ' & out_value) {');
+	out_struct_to_json[version][structname].push(indent + 'inline void to_json(nlohmann::json & json, ' + fq_structname + ' const & in_value) {');
 }
 
 function end_struct_func(version, structname) {
@@ -156,8 +156,8 @@ function get_object_type(name, json, allOf, version) {
 				const type = properties.type;
 				if (type) {
 					return type;
-				} else if (properties.allOf && properties.allOf[0] 
-					&& properties.allOf[0]['$ref'] == 'glTFid.schema.json') {
+				} else if (properties.allOf && properties.allOf[0] &&
+					properties.allOf[0]['$ref'] == 'glTFid.schema.json') {
 					return 'integer';
 				}
 			}
@@ -261,19 +261,19 @@ function parse(json, file, version, varname, parent) {
 			const properties = json.properties[name];
 			const allOf = properties.allOf;
 			const type = get_object_type(name, properties, json.allOf, version);
-			const ref  = properties['$ref'];
+			const ref = properties['$ref'];
 			const primitive = select_native_type(type);
 
 			if (is_required[name]) {
-				out_struct_from_json[version][structname].push(indent2 
-					+ 'fx::gltf::detail::ReadRequiredField("' + name + '", json, out_value.' + name + ');');
+				out_struct_from_json[version][structname].push(indent2 +
+					'fx::gltf::detail::ReadRequiredField("' + name + '", json, out_value.' + name + ');');
 			} else {
-				out_struct_from_json[version][structname].push(indent2 
-					+ 'fx::gltf::detail::ReadOptionalField("' + name + '", json, out_value.' + name + ');');
+				out_struct_from_json[version][structname].push(indent2 +
+					'fx::gltf::detail::ReadOptionalField("' + name + '", json, out_value.' + name + ');');
 			}
 
-			out_struct_to_json[version][structname].push(indent2 
-				+ 'fx::gltf::detail::WriteField("' + name + '", json, in_value.' + name + get_default(version, properties, type, json, allOf) + ');');
+			out_struct_to_json[version][structname].push(indent2 +
+				'fx::gltf::detail::WriteField("' + name + '", json, in_value.' + name + get_default(version, properties, type, json, allOf) + ');');
 
 			if (type == 'string') {
 				if (properties.enum) {
@@ -305,7 +305,7 @@ function parse(json, file, version, varname, parent) {
 			} else if (type == 'array') {
 				const items = properties.items;
 				if (items) {
-					const ref  = items['$ref'];
+					const ref = items['$ref'];
 					const primitives = select_native_type(items.type);
 					if (ref) {
 						const global_ref = global_references[version][ref];

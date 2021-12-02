@@ -11,10 +11,6 @@
 #include <unordered_map>
 #include <vector>
 
-#ifndef JSON_USE_IMPLICIT_CONVERSIONS
-#define JSON_USE_IMPLICIT_CONVERSIONS 0
-#endif
-
 #include <fx/gltf.h>
 #include <nlohmann/json.hpp>
 
