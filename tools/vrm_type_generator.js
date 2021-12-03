@@ -287,7 +287,7 @@ function parse(json, file, version, varname, parent) {
 				out_structs[version].push(indent + primitive + ' ' + name + set_default(properties, primitive) + ';');
 			} else if (!ref && type == 'object') {
 				if (is_vec3(properties)) {
-					out_structs[version].push(indent + 'std::vector<float> ' + name + ';');
+					out_structs[version].push(indent + 'Vector3 ' + name + ';');
 				} else if (name == 'floatProperties' || name == 'textureProperties' || name == 'keywordMap' || name == 'vectorProperties' || name == 'tagMap') {
 					const value_type = select_native_type(name);
 					out_structs[version].push(indent + 'std::unordered_map<std::string, ' + value_type + '> ' + name + '{};');
@@ -382,6 +382,7 @@ function parse(json, file, version, varname, parent) {
 
 const header = fs.readFileSync(path.join(__dirname, 'header.txt'), 'utf8').toString();
 const footer = fs.readFileSync(path.join(__dirname, 'footer.txt'), 'utf8').toString();
+const common_0 = fs.readFileSync(path.join(__dirname, 'common_0.h'), 'utf8').toString();
 const output_stream = fs.createWriteStream(path.join(__dirname, '..', 'include', 'VRMC', 'VRM.h'), 'utf8');
 output_stream.write(header, 'utf8');
 
@@ -391,6 +392,10 @@ supportedVersions.forEach(version => {
 
 	output_stream.write('#ifdef USE_VRMC_VRM_' + v + '\n\n', 'utf8');
 	output_stream.write('namespace VRMC_VRM_' + v + ' {\n', 'utf8');
+
+	if (version == '0.0') {
+		output_stream.write(common_0, 'utf8');
+	}
 
 	const schema_dir = path.join(basepath, version);
 	const files = fs.readdirSync(schema_dir);

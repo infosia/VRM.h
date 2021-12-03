@@ -17,11 +17,28 @@
 #ifdef USE_VRMC_VRM_0_0
 
 namespace VRMC_VRM_0_0 {
+struct Vector3 : fx::gltf::NeverEmpty {
+  float x;
+  float y;
+  float z;
+};
+
+inline void to_json(nlohmann::json &json, Vector3 const &in_value) {
+  fx::gltf::detail::WriteField("x", json, in_value.x, 0.f);
+  fx::gltf::detail::WriteField("y", json, in_value.y, 0.f);
+  fx::gltf::detail::WriteField("z", json, in_value.z, 0.f);
+}
+
+inline void from_json(nlohmann::json const &json, Vector3 &out_value) {
+  fx::gltf::detail::ReadRequiredField("x", json, out_value.x);
+  fx::gltf::detail::ReadRequiredField("y", json, out_value.y);
+  fx::gltf::detail::ReadRequiredField("z", json, out_value.z);
+}
 struct SecondaryanimationSpring : fx::gltf::NeverEmpty {
   std::string comment;
   float stiffiness{};
   float gravityPower{};
-  std::vector<float> gravityDir;
+  Vector3 gravityDir;
   float dragForce{};
   uint32_t center{};
   float hitRadius{};
@@ -33,7 +50,7 @@ struct SecondaryanimationSpring : fx::gltf::NeverEmpty {
 struct SecondaryanimationCollidergroup : fx::gltf::NeverEmpty {
   uint32_t node{};
   struct Collider : fx::gltf::NeverEmpty {
-    std::vector<float> offset;
+    Vector3 offset;
     float radius{};
     nlohmann::json extensionsAndExtras{};
   };
@@ -111,7 +128,7 @@ struct FirstpersonMeshannotation : fx::gltf::NeverEmpty {
 
 struct Firstperson : fx::gltf::NeverEmpty {
   uint32_t firstPersonBone{};
-  std::vector<float> firstPersonBoneOffset;
+  Vector3 firstPersonBoneOffset;
   std::vector<FirstpersonMeshannotation> meshAnnotations{};
   enum class LookAtTypeName : uint8_t { Bone, BlendShape };
   LookAtTypeName lookAtTypeName;
@@ -183,9 +200,9 @@ struct HumanoidBone : fx::gltf::NeverEmpty {
   Bone bone;
   uint32_t node{};
   bool useDefaultValues{};
-  std::vector<float> min;
-  std::vector<float> max;
-  std::vector<float> center;
+  Vector3 min;
+  Vector3 max;
+  Vector3 center;
   float axisLength{};
   nlohmann::json extensionsAndExtras{};
 };
