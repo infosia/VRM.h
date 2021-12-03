@@ -12,7 +12,7 @@ C++ header-only library for simple serialization/deserialization of [VRM](https:
 ### VRM 0.x
 
 ```cpp
-#define USE_VRMC_VRM_0_0 // Enable VRM 1.0
+#define USE_VRMC_VRM_0_0 // Enable VRM 0.x
 #include <VRMC/VRM.h> // Single header
 
 std::filesystem::path f{"model.vrm"};
@@ -44,6 +44,8 @@ if (vrm.meta.avatarPermission == VRMC_VRM_1_0::Meta::AvatarPermissionType::OnlyA
 	// ...
 }
 ```
+
+So these tests above are both checking against avatar usage permissions but why there's a difference between them? It is because their JSON specifications are different between 0.x and 1.0. Check out [vrm-specification](https://github.com/vrm-c/vrm-specification/tree/master/specification) for details if you're interested.
 
 ## License
 
