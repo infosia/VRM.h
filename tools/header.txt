@@ -8,9 +8,44 @@
 #pragma once
 
 #include <string>
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
 #include <nlohmann/json.hpp>
-#include <fx/gltf.h>
 
+namespace VRMC {
+template <typename TKey, typename TTarget>
+inline void ReadRequiredField(TKey &&key, nlohmann::json const &json,
+                              TTarget &target) {
+  const nlohmann::json::const_iterator iter = json.find(key);
+  if (iter == json.end()) {
+    std::string msg = "Required field not found : " + std::string(key);
+    throw std::runtime_error(msg);
+  }
+
+  target = iter->get<TTarget>();
+}
+
+template <typename TKey, typename TTarget>
+inline void ReadOptionalField(TKey &&key, nlohmann::json const &json,
+                              TTarget &target) {
+  const nlohmann::json::const_iterator iter = json.find(key);
+  if (iter != json.end()) {
+    target = iter->get<TTarget>();
+  }
+}
+
+template <typename TValue>
+inline void WriteField(std::string const &key, nlohmann::json &json,
+                       TValue const &value) {
+  json[key] = value;
+}
+
+template <typename TValue>
+inline void WriteField(std::string const &key, nlohmann::json &json,
+                       TValue const &value, TValue const &defaultValue) {
+  if (value != defaultValue) {
+    json[key] = value;
+  }
+}
+} // namespace VRMC

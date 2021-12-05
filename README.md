@@ -1,6 +1,6 @@
 # :diamond_shape_with_a_dot_inside: VRM.h
 
-C++ header-only library for simple serialization/deserialization of [VRM](https://vrm.dev/en/) on top of [fx-gltf](https://github.com/jessey-git/fx-gltf).
+C++ header-only library for simple serialization/deserialization of [VRM](https://vrm.dev/en/) inspired by [fx-gltf](https://github.com/jessey-git/fx-gltf) and [cgltf](https://github.com/jkuhlmann/cgltf).
 
 ## Features
 

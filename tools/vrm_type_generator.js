@@ -110,7 +110,7 @@ function write_enum(json, version, title, parent) {
 		out_to_json[version].push(indent4 + 'break;');
 	});
 	out_to_json[version].push(indent3 + 'default:');
-	out_to_json[version].push(indent4 + 'throw fx::gltf::invalid_gltf_document("Unknown ' + sanitize(title) + ' value");');
+	out_to_json[version].push(indent4 + 'throw std::runtime_error("Unknown ' + sanitize(title) + ' value");');
 	out_to_json[version].push(indent2 + '}');
 	out_to_json[version].push(indent + '}\n');
 }
@@ -126,9 +126,7 @@ function start_struct_func(version, structname, parent) {
 }
 
 function end_struct_func(version, structname) {
-	out_struct_from_json[version][structname].push(indent2 + 'fx::gltf::detail::ReadExtensionsAndExtras(json, out_value.extensionsAndExtras);');
 	out_struct_from_json[version][structname].push(indent + '}\n');
-
 	out_struct_to_json[version][structname].push(indent + '}\n');
 }
 
@@ -246,7 +244,7 @@ function parse(json, file, version, varname, parent) {
 	} else if (json.type == 'object' && json.properties) {
 
 		const structname = snake_case(sanitize(json.title ? json.title : file));
-		out_structs[version].push('struct ' + structname + ' : fx::gltf::NeverEmpty { ');
+		out_structs[version].push('struct ' + structname + ' { ');
 		start_struct_func(version, structname, (varname ? parent.title : undefined));
 
 		const is_required = {};
@@ -266,14 +264,14 @@ function parse(json, file, version, varname, parent) {
 
 			if (is_required[name]) {
 				out_struct_from_json[version][structname].push(indent2 +
-					'fx::gltf::detail::ReadRequiredField("' + name + '", json, out_value.' + name + ');');
+					'VRMC::ReadRequiredField("' + name + '", json, out_value.' + name + ');');
 			} else {
 				out_struct_from_json[version][structname].push(indent2 +
-					'fx::gltf::detail::ReadOptionalField("' + name + '", json, out_value.' + name + ');');
+					'VRMC::ReadOptionalField("' + name + '", json, out_value.' + name + ');');
 			}
 
 			out_struct_to_json[version][structname].push(indent2 +
-				'fx::gltf::detail::WriteField("' + name + '", json, in_value.' + name + get_default(version, properties, type, json, allOf) + ');');
+				'VRMC::WriteField("' + name + '", json, in_value.' + name + get_default(version, properties, type, json, allOf) + ');');
 
 			if (type == 'string') {
 				if (properties.enum) {
@@ -363,7 +361,6 @@ function parse(json, file, version, varname, parent) {
 			}
 		});
 
-		out_structs[version].push(indent + 'nlohmann::json extensionsAndExtras{};');
 		out_structs[version].push('};\n');
 		end_struct_func(version, structname);
 	} else if (json.type == 'object' && json.additionalProperties) {

@@ -11,30 +11,65 @@
 #include <unordered_map>
 #include <vector>
 
-#include <fx/gltf.h>
 #include <nlohmann/json.hpp>
 
+namespace VRMC {
+template <typename TKey, typename TTarget>
+inline void ReadRequiredField(TKey &&key, nlohmann::json const &json,
+                              TTarget &target) {
+  const nlohmann::json::const_iterator iter = json.find(key);
+  if (iter == json.end()) {
+    std::string msg = "Required field not found : " + std::string(key);
+    throw std::runtime_error(msg);
+  }
+
+  target = iter->get<TTarget>();
+}
+
+template <typename TKey, typename TTarget>
+inline void ReadOptionalField(TKey &&key, nlohmann::json const &json,
+                              TTarget &target) {
+  const nlohmann::json::const_iterator iter = json.find(key);
+  if (iter != json.end()) {
+    target = iter->get<TTarget>();
+  }
+}
+
+template <typename TValue>
+inline void WriteField(std::string const &key, nlohmann::json &json,
+                       TValue const &value) {
+  json[key] = value;
+}
+
+template <typename TValue>
+inline void WriteField(std::string const &key, nlohmann::json &json,
+                       TValue const &value, TValue const &defaultValue) {
+  if (value != defaultValue) {
+    json[key] = value;
+  }
+}
+} // namespace VRMC
 #ifdef USE_VRMC_VRM_0_0
 
 namespace VRMC_VRM_0_0 {
-struct Vector3 : fx::gltf::NeverEmpty {
+struct Vector3 {
   float x;
   float y;
   float z;
 };
 
 inline void to_json(nlohmann::json &json, Vector3 const &in_value) {
-  fx::gltf::detail::WriteField("x", json, in_value.x, 0.f);
-  fx::gltf::detail::WriteField("y", json, in_value.y, 0.f);
-  fx::gltf::detail::WriteField("z", json, in_value.z, 0.f);
+  VRMC::WriteField("x", json, in_value.x, 0.f);
+  VRMC::WriteField("y", json, in_value.y, 0.f);
+  VRMC::WriteField("z", json, in_value.z, 0.f);
 }
 
 inline void from_json(nlohmann::json const &json, Vector3 &out_value) {
-  fx::gltf::detail::ReadRequiredField("x", json, out_value.x);
-  fx::gltf::detail::ReadRequiredField("y", json, out_value.y);
-  fx::gltf::detail::ReadRequiredField("z", json, out_value.z);
+  VRMC::ReadRequiredField("x", json, out_value.x);
+  VRMC::ReadRequiredField("y", json, out_value.y);
+  VRMC::ReadRequiredField("z", json, out_value.z);
 }
-struct SecondaryanimationSpring : fx::gltf::NeverEmpty {
+struct SecondaryanimationSpring {
   std::string comment;
   float stiffiness{};
   float gravityPower{};
@@ -44,42 +79,36 @@ struct SecondaryanimationSpring : fx::gltf::NeverEmpty {
   float hitRadius{};
   std::vector<uint32_t> bones{};
   std::vector<uint32_t> colliderGroups{};
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct SecondaryanimationCollidergroup : fx::gltf::NeverEmpty {
+struct SecondaryanimationCollidergroup {
   uint32_t node{};
-  struct Collider : fx::gltf::NeverEmpty {
+  struct Collider {
     Vector3 offset;
     float radius{};
-    nlohmann::json extensionsAndExtras{};
   };
 
   std::vector<Collider> colliders{};
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct Secondaryanimation : fx::gltf::NeverEmpty {
+struct Secondaryanimation {
   std::vector<SecondaryanimationSpring> boneGroups{};
   std::vector<SecondaryanimationCollidergroup> colliderGroups{};
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct BlendshapeBind : fx::gltf::NeverEmpty {
+struct BlendshapeBind {
   uint32_t mesh{};
   uint32_t index{};
   float weight{};
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct BlendshapeMaterialbind : fx::gltf::NeverEmpty {
+struct BlendshapeMaterialbind {
   std::string materialName;
   std::string propertyName;
   std::vector<float> targetValue{};
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct BlendshapeGroup : fx::gltf::NeverEmpty {
+struct BlendshapeGroup {
   std::string name;
   enum class PresetName : uint8_t {
     Unknown,
@@ -105,28 +134,24 @@ struct BlendshapeGroup : fx::gltf::NeverEmpty {
   std::vector<BlendshapeBind> binds{};
   std::vector<BlendshapeMaterialbind> materialValues{};
   bool isBinary{};
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct Blendshape : fx::gltf::NeverEmpty {
+struct Blendshape {
   std::vector<BlendshapeGroup> blendShapeGroups{};
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct FirstpersonDegreemap : fx::gltf::NeverEmpty {
+struct FirstpersonDegreemap {
   std::vector<float> curve{};
   float xRange{};
   float yRange{};
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct FirstpersonMeshannotation : fx::gltf::NeverEmpty {
+struct FirstpersonMeshannotation {
   uint32_t mesh{};
   std::string firstPersonFlag;
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct Firstperson : fx::gltf::NeverEmpty {
+struct Firstperson {
   uint32_t firstPersonBone{};
   Vector3 firstPersonBoneOffset;
   std::vector<FirstpersonMeshannotation> meshAnnotations{};
@@ -136,10 +161,9 @@ struct Firstperson : fx::gltf::NeverEmpty {
   FirstpersonDegreemap lookAtHorizontalOuter;
   FirstpersonDegreemap lookAtVerticalDown;
   FirstpersonDegreemap lookAtVerticalUp;
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct HumanoidBone : fx::gltf::NeverEmpty {
+struct HumanoidBone {
   enum class Bone : uint8_t {
     Hips,
     LeftUpperLeg,
@@ -204,10 +228,9 @@ struct HumanoidBone : fx::gltf::NeverEmpty {
   Vector3 max;
   Vector3 center;
   float axisLength{};
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct Humanoid : fx::gltf::NeverEmpty {
+struct Humanoid {
   std::vector<HumanoidBone> humanBones{};
   float armStretch{};
   float legStretch{};
@@ -217,10 +240,9 @@ struct Humanoid : fx::gltf::NeverEmpty {
   float lowerLegTwist{};
   float feetSpacing{};
   bool hasTranslationDoF{};
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct Material : fx::gltf::NeverEmpty {
+struct Material {
   std::string name;
   std::string shader;
   uint32_t renderQueue{};
@@ -229,10 +251,9 @@ struct Material : fx::gltf::NeverEmpty {
   std::unordered_map<std::string, uint32_t> textureProperties{};
   std::unordered_map<std::string, bool> keywordMap{};
   std::unordered_map<std::string, std::string> tagMap{};
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct Meta : fx::gltf::NeverEmpty {
+struct Meta {
   std::string title;
   std::string version;
   std::string author;
@@ -265,10 +286,9 @@ struct Meta : fx::gltf::NeverEmpty {
   };
   LicenseName licenseName;
   std::string otherLicenseUrl;
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct Vrm : fx::gltf::NeverEmpty {
+struct Vrm {
   std::string exporterVersion;
   std::string specVersion;
   Meta meta;
@@ -277,7 +297,6 @@ struct Vrm : fx::gltf::NeverEmpty {
   Blendshape blendShapeMaster;
   Secondaryanimation secondaryAnimation;
   std::vector<Material> materialProperties{};
-  nlohmann::json extensionsAndExtras{};
 };
 inline void from_json(nlohmann::json const &json,
                       BlendshapeGroup::PresetName &out_value) {
@@ -570,7 +589,7 @@ inline void to_json(nlohmann::json &json,
     json = "blink_r";
     break;
   default:
-    throw fx::gltf::invalid_gltf_document("Unknown PresetName value");
+    throw std::runtime_error("Unknown PresetName value");
   }
 }
 
@@ -584,7 +603,7 @@ inline void to_json(nlohmann::json &json,
     json = "BlendShape";
     break;
   default:
-    throw fx::gltf::invalid_gltf_document("Unknown LookAtTypeName value");
+    throw std::runtime_error("Unknown LookAtTypeName value");
   }
 }
 
@@ -756,7 +775,7 @@ inline void to_json(nlohmann::json &json, HumanoidBone::Bone const &in_value) {
     json = "upperChest";
     break;
   default:
-    throw fx::gltf::invalid_gltf_document("Unknown Bone value");
+    throw std::runtime_error("Unknown Bone value");
   }
 }
 
@@ -773,7 +792,7 @@ inline void to_json(nlohmann::json &json,
     json = "Everyone";
     break;
   default:
-    throw fx::gltf::invalid_gltf_document("Unknown AllowedUserName value");
+    throw std::runtime_error("Unknown AllowedUserName value");
   }
 }
 
@@ -787,7 +806,7 @@ inline void to_json(nlohmann::json &json,
     json = "Allow";
     break;
   default:
-    throw fx::gltf::invalid_gltf_document("Unknown ViolentUssageName value");
+    throw std::runtime_error("Unknown ViolentUssageName value");
   }
 }
 
@@ -801,7 +820,7 @@ inline void to_json(nlohmann::json &json,
     json = "Allow";
     break;
   default:
-    throw fx::gltf::invalid_gltf_document("Unknown SexualUssageName value");
+    throw std::runtime_error("Unknown SexualUssageName value");
   }
 }
 
@@ -815,7 +834,7 @@ inline void to_json(nlohmann::json &json,
     json = "Allow";
     break;
   default:
-    throw fx::gltf::invalid_gltf_document("Unknown CommercialUssageName value");
+    throw std::runtime_error("Unknown CommercialUssageName value");
   }
 }
 
@@ -849,369 +868,274 @@ inline void to_json(nlohmann::json &json, Meta::LicenseName const &in_value) {
     json = "Other";
     break;
   default:
-    throw fx::gltf::invalid_gltf_document("Unknown LicenseName value");
+    throw std::runtime_error("Unknown LicenseName value");
   }
 }
 inline void to_json(nlohmann::json &json,
                     SecondaryanimationSpring const &in_value) {
-  fx::gltf::detail::WriteField("comment", json, in_value.comment, {});
-  fx::gltf::detail::WriteField("stiffiness", json, in_value.stiffiness, 0.f);
-  fx::gltf::detail::WriteField("gravityPower", json, in_value.gravityPower,
-                               0.f);
-  fx::gltf::detail::WriteField("gravityDir", json, in_value.gravityDir);
-  fx::gltf::detail::WriteField("dragForce", json, in_value.dragForce, 0.f);
-  fx::gltf::detail::WriteField("center", json, in_value.center,
-                               static_cast<uint32_t>(0));
-  fx::gltf::detail::WriteField("hitRadius", json, in_value.hitRadius, 0.f);
-  fx::gltf::detail::WriteField("bones", json, in_value.bones);
-  fx::gltf::detail::WriteField("colliderGroups", json, in_value.colliderGroups);
+  VRMC::WriteField("comment", json, in_value.comment, {});
+  VRMC::WriteField("stiffiness", json, in_value.stiffiness, 0.f);
+  VRMC::WriteField("gravityPower", json, in_value.gravityPower, 0.f);
+  VRMC::WriteField("gravityDir", json, in_value.gravityDir);
+  VRMC::WriteField("dragForce", json, in_value.dragForce, 0.f);
+  VRMC::WriteField("center", json, in_value.center, static_cast<uint32_t>(0));
+  VRMC::WriteField("hitRadius", json, in_value.hitRadius, 0.f);
+  VRMC::WriteField("bones", json, in_value.bones);
+  VRMC::WriteField("colliderGroups", json, in_value.colliderGroups);
 }
 inline void to_json(nlohmann::json &json,
                     SecondaryanimationCollidergroup const &in_value) {
-  fx::gltf::detail::WriteField("node", json, in_value.node,
-                               static_cast<uint32_t>(0));
-  fx::gltf::detail::WriteField("colliders", json, in_value.colliders);
+  VRMC::WriteField("node", json, in_value.node, static_cast<uint32_t>(0));
+  VRMC::WriteField("colliders", json, in_value.colliders);
 }
 inline void to_json(nlohmann::json &json,
                     SecondaryanimationCollidergroup::Collider const &in_value) {
-  fx::gltf::detail::WriteField("offset", json, in_value.offset);
-  fx::gltf::detail::WriteField("radius", json, in_value.radius, 0.f);
+  VRMC::WriteField("offset", json, in_value.offset);
+  VRMC::WriteField("radius", json, in_value.radius, 0.f);
 }
 inline void to_json(nlohmann::json &json, Secondaryanimation const &in_value) {
-  fx::gltf::detail::WriteField("boneGroups", json, in_value.boneGroups);
-  fx::gltf::detail::WriteField("colliderGroups", json, in_value.colliderGroups);
+  VRMC::WriteField("boneGroups", json, in_value.boneGroups);
+  VRMC::WriteField("colliderGroups", json, in_value.colliderGroups);
 }
 inline void to_json(nlohmann::json &json, BlendshapeBind const &in_value) {
-  fx::gltf::detail::WriteField("mesh", json, in_value.mesh,
-                               static_cast<uint32_t>(0));
-  fx::gltf::detail::WriteField("index", json, in_value.index,
-                               static_cast<uint32_t>(0));
-  fx::gltf::detail::WriteField("weight", json, in_value.weight, 0.f);
+  VRMC::WriteField("mesh", json, in_value.mesh, static_cast<uint32_t>(0));
+  VRMC::WriteField("index", json, in_value.index, static_cast<uint32_t>(0));
+  VRMC::WriteField("weight", json, in_value.weight, 0.f);
 }
 inline void to_json(nlohmann::json &json,
                     BlendshapeMaterialbind const &in_value) {
-  fx::gltf::detail::WriteField("materialName", json, in_value.materialName, {});
-  fx::gltf::detail::WriteField("propertyName", json, in_value.propertyName, {});
-  fx::gltf::detail::WriteField("targetValue", json, in_value.targetValue);
+  VRMC::WriteField("materialName", json, in_value.materialName, {});
+  VRMC::WriteField("propertyName", json, in_value.propertyName, {});
+  VRMC::WriteField("targetValue", json, in_value.targetValue);
 }
 inline void to_json(nlohmann::json &json, BlendshapeGroup const &in_value) {
-  fx::gltf::detail::WriteField("name", json, in_value.name, {});
-  fx::gltf::detail::WriteField("presetName", json, in_value.presetName, {});
-  fx::gltf::detail::WriteField("binds", json, in_value.binds);
-  fx::gltf::detail::WriteField("materialValues", json, in_value.materialValues);
-  fx::gltf::detail::WriteField("isBinary", json, in_value.isBinary, false);
+  VRMC::WriteField("name", json, in_value.name, {});
+  VRMC::WriteField("presetName", json, in_value.presetName, {});
+  VRMC::WriteField("binds", json, in_value.binds);
+  VRMC::WriteField("materialValues", json, in_value.materialValues);
+  VRMC::WriteField("isBinary", json, in_value.isBinary, false);
 }
 inline void to_json(nlohmann::json &json, Blendshape const &in_value) {
-  fx::gltf::detail::WriteField("blendShapeGroups", json,
-                               in_value.blendShapeGroups);
+  VRMC::WriteField("blendShapeGroups", json, in_value.blendShapeGroups);
 }
 inline void to_json(nlohmann::json &json,
                     FirstpersonDegreemap const &in_value) {
-  fx::gltf::detail::WriteField("curve", json, in_value.curve);
-  fx::gltf::detail::WriteField("xRange", json, in_value.xRange, 0.f);
-  fx::gltf::detail::WriteField("yRange", json, in_value.yRange, 0.f);
+  VRMC::WriteField("curve", json, in_value.curve);
+  VRMC::WriteField("xRange", json, in_value.xRange, 0.f);
+  VRMC::WriteField("yRange", json, in_value.yRange, 0.f);
 }
 inline void to_json(nlohmann::json &json,
                     FirstpersonMeshannotation const &in_value) {
-  fx::gltf::detail::WriteField("mesh", json, in_value.mesh,
-                               static_cast<uint32_t>(0));
-  fx::gltf::detail::WriteField("firstPersonFlag", json,
-                               in_value.firstPersonFlag, {});
+  VRMC::WriteField("mesh", json, in_value.mesh, static_cast<uint32_t>(0));
+  VRMC::WriteField("firstPersonFlag", json, in_value.firstPersonFlag, {});
 }
 inline void to_json(nlohmann::json &json, Firstperson const &in_value) {
-  fx::gltf::detail::WriteField("firstPersonBone", json,
-                               in_value.firstPersonBone,
-                               static_cast<uint32_t>(0));
-  fx::gltf::detail::WriteField("firstPersonBoneOffset", json,
-                               in_value.firstPersonBoneOffset);
-  fx::gltf::detail::WriteField("meshAnnotations", json,
-                               in_value.meshAnnotations);
-  fx::gltf::detail::WriteField("lookAtTypeName", json, in_value.lookAtTypeName,
-                               {});
-  fx::gltf::detail::WriteField("lookAtHorizontalInner", json,
-                               in_value.lookAtHorizontalInner);
-  fx::gltf::detail::WriteField("lookAtHorizontalOuter", json,
-                               in_value.lookAtHorizontalOuter);
-  fx::gltf::detail::WriteField("lookAtVerticalDown", json,
-                               in_value.lookAtVerticalDown);
-  fx::gltf::detail::WriteField("lookAtVerticalUp", json,
-                               in_value.lookAtVerticalUp);
+  VRMC::WriteField("firstPersonBone", json, in_value.firstPersonBone,
+                   static_cast<uint32_t>(0));
+  VRMC::WriteField("firstPersonBoneOffset", json,
+                   in_value.firstPersonBoneOffset);
+  VRMC::WriteField("meshAnnotations", json, in_value.meshAnnotations);
+  VRMC::WriteField("lookAtTypeName", json, in_value.lookAtTypeName, {});
+  VRMC::WriteField("lookAtHorizontalInner", json,
+                   in_value.lookAtHorizontalInner);
+  VRMC::WriteField("lookAtHorizontalOuter", json,
+                   in_value.lookAtHorizontalOuter);
+  VRMC::WriteField("lookAtVerticalDown", json, in_value.lookAtVerticalDown);
+  VRMC::WriteField("lookAtVerticalUp", json, in_value.lookAtVerticalUp);
 }
 inline void to_json(nlohmann::json &json, HumanoidBone const &in_value) {
-  fx::gltf::detail::WriteField("bone", json, in_value.bone, {});
-  fx::gltf::detail::WriteField("node", json, in_value.node,
-                               static_cast<uint32_t>(0));
-  fx::gltf::detail::WriteField("useDefaultValues", json,
-                               in_value.useDefaultValues, false);
-  fx::gltf::detail::WriteField("min", json, in_value.min);
-  fx::gltf::detail::WriteField("max", json, in_value.max);
-  fx::gltf::detail::WriteField("center", json, in_value.center);
-  fx::gltf::detail::WriteField("axisLength", json, in_value.axisLength, 0.f);
+  VRMC::WriteField("bone", json, in_value.bone, {});
+  VRMC::WriteField("node", json, in_value.node, static_cast<uint32_t>(0));
+  VRMC::WriteField("useDefaultValues", json, in_value.useDefaultValues, false);
+  VRMC::WriteField("min", json, in_value.min);
+  VRMC::WriteField("max", json, in_value.max);
+  VRMC::WriteField("center", json, in_value.center);
+  VRMC::WriteField("axisLength", json, in_value.axisLength, 0.f);
 }
 inline void to_json(nlohmann::json &json, Humanoid const &in_value) {
-  fx::gltf::detail::WriteField("humanBones", json, in_value.humanBones);
-  fx::gltf::detail::WriteField("armStretch", json, in_value.armStretch, 0.f);
-  fx::gltf::detail::WriteField("legStretch", json, in_value.legStretch, 0.f);
-  fx::gltf::detail::WriteField("upperArmTwist", json, in_value.upperArmTwist,
-                               0.f);
-  fx::gltf::detail::WriteField("lowerArmTwist", json, in_value.lowerArmTwist,
-                               0.f);
-  fx::gltf::detail::WriteField("upperLegTwist", json, in_value.upperLegTwist,
-                               0.f);
-  fx::gltf::detail::WriteField("lowerLegTwist", json, in_value.lowerLegTwist,
-                               0.f);
-  fx::gltf::detail::WriteField("feetSpacing", json, in_value.feetSpacing, 0.f);
-  fx::gltf::detail::WriteField("hasTranslationDoF", json,
-                               in_value.hasTranslationDoF, false);
+  VRMC::WriteField("humanBones", json, in_value.humanBones);
+  VRMC::WriteField("armStretch", json, in_value.armStretch, 0.f);
+  VRMC::WriteField("legStretch", json, in_value.legStretch, 0.f);
+  VRMC::WriteField("upperArmTwist", json, in_value.upperArmTwist, 0.f);
+  VRMC::WriteField("lowerArmTwist", json, in_value.lowerArmTwist, 0.f);
+  VRMC::WriteField("upperLegTwist", json, in_value.upperLegTwist, 0.f);
+  VRMC::WriteField("lowerLegTwist", json, in_value.lowerLegTwist, 0.f);
+  VRMC::WriteField("feetSpacing", json, in_value.feetSpacing, 0.f);
+  VRMC::WriteField("hasTranslationDoF", json, in_value.hasTranslationDoF,
+                   false);
 }
 inline void to_json(nlohmann::json &json, Material const &in_value) {
-  fx::gltf::detail::WriteField("name", json, in_value.name, {});
-  fx::gltf::detail::WriteField("shader", json, in_value.shader, {});
-  fx::gltf::detail::WriteField("renderQueue", json, in_value.renderQueue,
-                               static_cast<uint32_t>(0));
-  fx::gltf::detail::WriteField("floatProperties", json,
-                               in_value.floatProperties);
-  fx::gltf::detail::WriteField("vectorProperties", json,
-                               in_value.vectorProperties);
-  fx::gltf::detail::WriteField("textureProperties", json,
-                               in_value.textureProperties);
-  fx::gltf::detail::WriteField("keywordMap", json, in_value.keywordMap);
-  fx::gltf::detail::WriteField("tagMap", json, in_value.tagMap);
+  VRMC::WriteField("name", json, in_value.name, {});
+  VRMC::WriteField("shader", json, in_value.shader, {});
+  VRMC::WriteField("renderQueue", json, in_value.renderQueue,
+                   static_cast<uint32_t>(0));
+  VRMC::WriteField("floatProperties", json, in_value.floatProperties);
+  VRMC::WriteField("vectorProperties", json, in_value.vectorProperties);
+  VRMC::WriteField("textureProperties", json, in_value.textureProperties);
+  VRMC::WriteField("keywordMap", json, in_value.keywordMap);
+  VRMC::WriteField("tagMap", json, in_value.tagMap);
 }
 inline void to_json(nlohmann::json &json, Meta const &in_value) {
-  fx::gltf::detail::WriteField("title", json, in_value.title, {});
-  fx::gltf::detail::WriteField("version", json, in_value.version, {});
-  fx::gltf::detail::WriteField("author", json, in_value.author, {});
-  fx::gltf::detail::WriteField("contactInformation", json,
-                               in_value.contactInformation, {});
-  fx::gltf::detail::WriteField("reference", json, in_value.reference, {});
-  fx::gltf::detail::WriteField("texture", json, in_value.texture,
-                               static_cast<uint32_t>(0));
-  fx::gltf::detail::WriteField("allowedUserName", json,
-                               in_value.allowedUserName, {});
-  fx::gltf::detail::WriteField("violentUssageName", json,
-                               in_value.violentUssageName, {});
-  fx::gltf::detail::WriteField("sexualUssageName", json,
-                               in_value.sexualUssageName, {});
-  fx::gltf::detail::WriteField("commercialUssageName", json,
-                               in_value.commercialUssageName, {});
-  fx::gltf::detail::WriteField("otherPermissionUrl", json,
-                               in_value.otherPermissionUrl, {});
-  fx::gltf::detail::WriteField("licenseName", json, in_value.licenseName, {});
-  fx::gltf::detail::WriteField("otherLicenseUrl", json,
-                               in_value.otherLicenseUrl, {});
+  VRMC::WriteField("title", json, in_value.title, {});
+  VRMC::WriteField("version", json, in_value.version, {});
+  VRMC::WriteField("author", json, in_value.author, {});
+  VRMC::WriteField("contactInformation", json, in_value.contactInformation, {});
+  VRMC::WriteField("reference", json, in_value.reference, {});
+  VRMC::WriteField("texture", json, in_value.texture, static_cast<uint32_t>(0));
+  VRMC::WriteField("allowedUserName", json, in_value.allowedUserName, {});
+  VRMC::WriteField("violentUssageName", json, in_value.violentUssageName, {});
+  VRMC::WriteField("sexualUssageName", json, in_value.sexualUssageName, {});
+  VRMC::WriteField("commercialUssageName", json, in_value.commercialUssageName,
+                   {});
+  VRMC::WriteField("otherPermissionUrl", json, in_value.otherPermissionUrl, {});
+  VRMC::WriteField("licenseName", json, in_value.licenseName, {});
+  VRMC::WriteField("otherLicenseUrl", json, in_value.otherLicenseUrl, {});
 }
 inline void to_json(nlohmann::json &json, Vrm const &in_value) {
-  fx::gltf::detail::WriteField("exporterVersion", json,
-                               in_value.exporterVersion, {});
-  fx::gltf::detail::WriteField("specVersion", json, in_value.specVersion, {});
-  fx::gltf::detail::WriteField("meta", json, in_value.meta);
-  fx::gltf::detail::WriteField("humanoid", json, in_value.humanoid);
-  fx::gltf::detail::WriteField("firstPerson", json, in_value.firstPerson);
-  fx::gltf::detail::WriteField("blendShapeMaster", json,
-                               in_value.blendShapeMaster);
-  fx::gltf::detail::WriteField("secondaryAnimation", json,
-                               in_value.secondaryAnimation);
-  fx::gltf::detail::WriteField("materialProperties", json,
-                               in_value.materialProperties);
+  VRMC::WriteField("exporterVersion", json, in_value.exporterVersion, {});
+  VRMC::WriteField("specVersion", json, in_value.specVersion, {});
+  VRMC::WriteField("meta", json, in_value.meta);
+  VRMC::WriteField("humanoid", json, in_value.humanoid);
+  VRMC::WriteField("firstPerson", json, in_value.firstPerson);
+  VRMC::WriteField("blendShapeMaster", json, in_value.blendShapeMaster);
+  VRMC::WriteField("secondaryAnimation", json, in_value.secondaryAnimation);
+  VRMC::WriteField("materialProperties", json, in_value.materialProperties);
 }
 inline void from_json(nlohmann::json const &json,
                       SecondaryanimationSpring &out_value) {
-  fx::gltf::detail::ReadOptionalField("comment", json, out_value.comment);
-  fx::gltf::detail::ReadOptionalField("stiffiness", json, out_value.stiffiness);
-  fx::gltf::detail::ReadOptionalField("gravityPower", json,
-                                      out_value.gravityPower);
-  fx::gltf::detail::ReadOptionalField("gravityDir", json, out_value.gravityDir);
-  fx::gltf::detail::ReadOptionalField("dragForce", json, out_value.dragForce);
-  fx::gltf::detail::ReadOptionalField("center", json, out_value.center);
-  fx::gltf::detail::ReadOptionalField("hitRadius", json, out_value.hitRadius);
-  fx::gltf::detail::ReadOptionalField("bones", json, out_value.bones);
-  fx::gltf::detail::ReadOptionalField("colliderGroups", json,
-                                      out_value.colliderGroups);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("comment", json, out_value.comment);
+  VRMC::ReadOptionalField("stiffiness", json, out_value.stiffiness);
+  VRMC::ReadOptionalField("gravityPower", json, out_value.gravityPower);
+  VRMC::ReadOptionalField("gravityDir", json, out_value.gravityDir);
+  VRMC::ReadOptionalField("dragForce", json, out_value.dragForce);
+  VRMC::ReadOptionalField("center", json, out_value.center);
+  VRMC::ReadOptionalField("hitRadius", json, out_value.hitRadius);
+  VRMC::ReadOptionalField("bones", json, out_value.bones);
+  VRMC::ReadOptionalField("colliderGroups", json, out_value.colliderGroups);
 }
 inline void from_json(nlohmann::json const &json,
                       SecondaryanimationCollidergroup &out_value) {
-  fx::gltf::detail::ReadOptionalField("node", json, out_value.node);
-  fx::gltf::detail::ReadOptionalField("colliders", json, out_value.colliders);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("node", json, out_value.node);
+  VRMC::ReadOptionalField("colliders", json, out_value.colliders);
 }
 inline void from_json(nlohmann::json const &json,
                       SecondaryanimationCollidergroup::Collider &out_value) {
-  fx::gltf::detail::ReadOptionalField("offset", json, out_value.offset);
-  fx::gltf::detail::ReadOptionalField("radius", json, out_value.radius);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("offset", json, out_value.offset);
+  VRMC::ReadOptionalField("radius", json, out_value.radius);
 }
 inline void from_json(nlohmann::json const &json,
                       Secondaryanimation &out_value) {
-  fx::gltf::detail::ReadOptionalField("boneGroups", json, out_value.boneGroups);
-  fx::gltf::detail::ReadOptionalField("colliderGroups", json,
-                                      out_value.colliderGroups);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("boneGroups", json, out_value.boneGroups);
+  VRMC::ReadOptionalField("colliderGroups", json, out_value.colliderGroups);
 }
 inline void from_json(nlohmann::json const &json, BlendshapeBind &out_value) {
-  fx::gltf::detail::ReadOptionalField("mesh", json, out_value.mesh);
-  fx::gltf::detail::ReadOptionalField("index", json, out_value.index);
-  fx::gltf::detail::ReadOptionalField("weight", json, out_value.weight);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("mesh", json, out_value.mesh);
+  VRMC::ReadOptionalField("index", json, out_value.index);
+  VRMC::ReadOptionalField("weight", json, out_value.weight);
 }
 inline void from_json(nlohmann::json const &json,
                       BlendshapeMaterialbind &out_value) {
-  fx::gltf::detail::ReadOptionalField("materialName", json,
-                                      out_value.materialName);
-  fx::gltf::detail::ReadOptionalField("propertyName", json,
-                                      out_value.propertyName);
-  fx::gltf::detail::ReadOptionalField("targetValue", json,
-                                      out_value.targetValue);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("materialName", json, out_value.materialName);
+  VRMC::ReadOptionalField("propertyName", json, out_value.propertyName);
+  VRMC::ReadOptionalField("targetValue", json, out_value.targetValue);
 }
 inline void from_json(nlohmann::json const &json, BlendshapeGroup &out_value) {
-  fx::gltf::detail::ReadOptionalField("name", json, out_value.name);
-  fx::gltf::detail::ReadOptionalField("presetName", json, out_value.presetName);
-  fx::gltf::detail::ReadOptionalField("binds", json, out_value.binds);
-  fx::gltf::detail::ReadOptionalField("materialValues", json,
-                                      out_value.materialValues);
-  fx::gltf::detail::ReadOptionalField("isBinary", json, out_value.isBinary);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("name", json, out_value.name);
+  VRMC::ReadOptionalField("presetName", json, out_value.presetName);
+  VRMC::ReadOptionalField("binds", json, out_value.binds);
+  VRMC::ReadOptionalField("materialValues", json, out_value.materialValues);
+  VRMC::ReadOptionalField("isBinary", json, out_value.isBinary);
 }
 inline void from_json(nlohmann::json const &json, Blendshape &out_value) {
-  fx::gltf::detail::ReadOptionalField("blendShapeGroups", json,
-                                      out_value.blendShapeGroups);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("blendShapeGroups", json, out_value.blendShapeGroups);
 }
 inline void from_json(nlohmann::json const &json,
                       FirstpersonDegreemap &out_value) {
-  fx::gltf::detail::ReadOptionalField("curve", json, out_value.curve);
-  fx::gltf::detail::ReadOptionalField("xRange", json, out_value.xRange);
-  fx::gltf::detail::ReadOptionalField("yRange", json, out_value.yRange);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("curve", json, out_value.curve);
+  VRMC::ReadOptionalField("xRange", json, out_value.xRange);
+  VRMC::ReadOptionalField("yRange", json, out_value.yRange);
 }
 inline void from_json(nlohmann::json const &json,
                       FirstpersonMeshannotation &out_value) {
-  fx::gltf::detail::ReadOptionalField("mesh", json, out_value.mesh);
-  fx::gltf::detail::ReadOptionalField("firstPersonFlag", json,
-                                      out_value.firstPersonFlag);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("mesh", json, out_value.mesh);
+  VRMC::ReadOptionalField("firstPersonFlag", json, out_value.firstPersonFlag);
 }
 inline void from_json(nlohmann::json const &json, Firstperson &out_value) {
-  fx::gltf::detail::ReadOptionalField("firstPersonBone", json,
-                                      out_value.firstPersonBone);
-  fx::gltf::detail::ReadOptionalField("firstPersonBoneOffset", json,
-                                      out_value.firstPersonBoneOffset);
-  fx::gltf::detail::ReadOptionalField("meshAnnotations", json,
-                                      out_value.meshAnnotations);
-  fx::gltf::detail::ReadOptionalField("lookAtTypeName", json,
-                                      out_value.lookAtTypeName);
-  fx::gltf::detail::ReadOptionalField("lookAtHorizontalInner", json,
-                                      out_value.lookAtHorizontalInner);
-  fx::gltf::detail::ReadOptionalField("lookAtHorizontalOuter", json,
-                                      out_value.lookAtHorizontalOuter);
-  fx::gltf::detail::ReadOptionalField("lookAtVerticalDown", json,
-                                      out_value.lookAtVerticalDown);
-  fx::gltf::detail::ReadOptionalField("lookAtVerticalUp", json,
-                                      out_value.lookAtVerticalUp);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("firstPersonBone", json, out_value.firstPersonBone);
+  VRMC::ReadOptionalField("firstPersonBoneOffset", json,
+                          out_value.firstPersonBoneOffset);
+  VRMC::ReadOptionalField("meshAnnotations", json, out_value.meshAnnotations);
+  VRMC::ReadOptionalField("lookAtTypeName", json, out_value.lookAtTypeName);
+  VRMC::ReadOptionalField("lookAtHorizontalInner", json,
+                          out_value.lookAtHorizontalInner);
+  VRMC::ReadOptionalField("lookAtHorizontalOuter", json,
+                          out_value.lookAtHorizontalOuter);
+  VRMC::ReadOptionalField("lookAtVerticalDown", json,
+                          out_value.lookAtVerticalDown);
+  VRMC::ReadOptionalField("lookAtVerticalUp", json, out_value.lookAtVerticalUp);
 }
 inline void from_json(nlohmann::json const &json, HumanoidBone &out_value) {
-  fx::gltf::detail::ReadOptionalField("bone", json, out_value.bone);
-  fx::gltf::detail::ReadOptionalField("node", json, out_value.node);
-  fx::gltf::detail::ReadOptionalField("useDefaultValues", json,
-                                      out_value.useDefaultValues);
-  fx::gltf::detail::ReadOptionalField("min", json, out_value.min);
-  fx::gltf::detail::ReadOptionalField("max", json, out_value.max);
-  fx::gltf::detail::ReadOptionalField("center", json, out_value.center);
-  fx::gltf::detail::ReadOptionalField("axisLength", json, out_value.axisLength);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("bone", json, out_value.bone);
+  VRMC::ReadOptionalField("node", json, out_value.node);
+  VRMC::ReadOptionalField("useDefaultValues", json, out_value.useDefaultValues);
+  VRMC::ReadOptionalField("min", json, out_value.min);
+  VRMC::ReadOptionalField("max", json, out_value.max);
+  VRMC::ReadOptionalField("center", json, out_value.center);
+  VRMC::ReadOptionalField("axisLength", json, out_value.axisLength);
 }
 inline void from_json(nlohmann::json const &json, Humanoid &out_value) {
-  fx::gltf::detail::ReadOptionalField("humanBones", json, out_value.humanBones);
-  fx::gltf::detail::ReadOptionalField("armStretch", json, out_value.armStretch);
-  fx::gltf::detail::ReadOptionalField("legStretch", json, out_value.legStretch);
-  fx::gltf::detail::ReadOptionalField("upperArmTwist", json,
-                                      out_value.upperArmTwist);
-  fx::gltf::detail::ReadOptionalField("lowerArmTwist", json,
-                                      out_value.lowerArmTwist);
-  fx::gltf::detail::ReadOptionalField("upperLegTwist", json,
-                                      out_value.upperLegTwist);
-  fx::gltf::detail::ReadOptionalField("lowerLegTwist", json,
-                                      out_value.lowerLegTwist);
-  fx::gltf::detail::ReadOptionalField("feetSpacing", json,
-                                      out_value.feetSpacing);
-  fx::gltf::detail::ReadOptionalField("hasTranslationDoF", json,
-                                      out_value.hasTranslationDoF);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("humanBones", json, out_value.humanBones);
+  VRMC::ReadOptionalField("armStretch", json, out_value.armStretch);
+  VRMC::ReadOptionalField("legStretch", json, out_value.legStretch);
+  VRMC::ReadOptionalField("upperArmTwist", json, out_value.upperArmTwist);
+  VRMC::ReadOptionalField("lowerArmTwist", json, out_value.lowerArmTwist);
+  VRMC::ReadOptionalField("upperLegTwist", json, out_value.upperLegTwist);
+  VRMC::ReadOptionalField("lowerLegTwist", json, out_value.lowerLegTwist);
+  VRMC::ReadOptionalField("feetSpacing", json, out_value.feetSpacing);
+  VRMC::ReadOptionalField("hasTranslationDoF", json,
+                          out_value.hasTranslationDoF);
 }
 inline void from_json(nlohmann::json const &json, Material &out_value) {
-  fx::gltf::detail::ReadOptionalField("name", json, out_value.name);
-  fx::gltf::detail::ReadOptionalField("shader", json, out_value.shader);
-  fx::gltf::detail::ReadOptionalField("renderQueue", json,
-                                      out_value.renderQueue);
-  fx::gltf::detail::ReadOptionalField("floatProperties", json,
-                                      out_value.floatProperties);
-  fx::gltf::detail::ReadOptionalField("vectorProperties", json,
-                                      out_value.vectorProperties);
-  fx::gltf::detail::ReadOptionalField("textureProperties", json,
-                                      out_value.textureProperties);
-  fx::gltf::detail::ReadOptionalField("keywordMap", json, out_value.keywordMap);
-  fx::gltf::detail::ReadOptionalField("tagMap", json, out_value.tagMap);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("name", json, out_value.name);
+  VRMC::ReadOptionalField("shader", json, out_value.shader);
+  VRMC::ReadOptionalField("renderQueue", json, out_value.renderQueue);
+  VRMC::ReadOptionalField("floatProperties", json, out_value.floatProperties);
+  VRMC::ReadOptionalField("vectorProperties", json, out_value.vectorProperties);
+  VRMC::ReadOptionalField("textureProperties", json,
+                          out_value.textureProperties);
+  VRMC::ReadOptionalField("keywordMap", json, out_value.keywordMap);
+  VRMC::ReadOptionalField("tagMap", json, out_value.tagMap);
 }
 inline void from_json(nlohmann::json const &json, Meta &out_value) {
-  fx::gltf::detail::ReadOptionalField("title", json, out_value.title);
-  fx::gltf::detail::ReadOptionalField("version", json, out_value.version);
-  fx::gltf::detail::ReadOptionalField("author", json, out_value.author);
-  fx::gltf::detail::ReadOptionalField("contactInformation", json,
-                                      out_value.contactInformation);
-  fx::gltf::detail::ReadOptionalField("reference", json, out_value.reference);
-  fx::gltf::detail::ReadOptionalField("texture", json, out_value.texture);
-  fx::gltf::detail::ReadOptionalField("allowedUserName", json,
-                                      out_value.allowedUserName);
-  fx::gltf::detail::ReadOptionalField("violentUssageName", json,
-                                      out_value.violentUssageName);
-  fx::gltf::detail::ReadOptionalField("sexualUssageName", json,
-                                      out_value.sexualUssageName);
-  fx::gltf::detail::ReadOptionalField("commercialUssageName", json,
-                                      out_value.commercialUssageName);
-  fx::gltf::detail::ReadOptionalField("otherPermissionUrl", json,
-                                      out_value.otherPermissionUrl);
-  fx::gltf::detail::ReadOptionalField("licenseName", json,
-                                      out_value.licenseName);
-  fx::gltf::detail::ReadOptionalField("otherLicenseUrl", json,
-                                      out_value.otherLicenseUrl);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("title", json, out_value.title);
+  VRMC::ReadOptionalField("version", json, out_value.version);
+  VRMC::ReadOptionalField("author", json, out_value.author);
+  VRMC::ReadOptionalField("contactInformation", json,
+                          out_value.contactInformation);
+  VRMC::ReadOptionalField("reference", json, out_value.reference);
+  VRMC::ReadOptionalField("texture", json, out_value.texture);
+  VRMC::ReadOptionalField("allowedUserName", json, out_value.allowedUserName);
+  VRMC::ReadOptionalField("violentUssageName", json,
+                          out_value.violentUssageName);
+  VRMC::ReadOptionalField("sexualUssageName", json, out_value.sexualUssageName);
+  VRMC::ReadOptionalField("commercialUssageName", json,
+                          out_value.commercialUssageName);
+  VRMC::ReadOptionalField("otherPermissionUrl", json,
+                          out_value.otherPermissionUrl);
+  VRMC::ReadOptionalField("licenseName", json, out_value.licenseName);
+  VRMC::ReadOptionalField("otherLicenseUrl", json, out_value.otherLicenseUrl);
 }
 inline void from_json(nlohmann::json const &json, Vrm &out_value) {
-  fx::gltf::detail::ReadOptionalField("exporterVersion", json,
-                                      out_value.exporterVersion);
-  fx::gltf::detail::ReadOptionalField("specVersion", json,
-                                      out_value.specVersion);
-  fx::gltf::detail::ReadOptionalField("meta", json, out_value.meta);
-  fx::gltf::detail::ReadOptionalField("humanoid", json, out_value.humanoid);
-  fx::gltf::detail::ReadOptionalField("firstPerson", json,
-                                      out_value.firstPerson);
-  fx::gltf::detail::ReadOptionalField("blendShapeMaster", json,
-                                      out_value.blendShapeMaster);
-  fx::gltf::detail::ReadOptionalField("secondaryAnimation", json,
-                                      out_value.secondaryAnimation);
-  fx::gltf::detail::ReadOptionalField("materialProperties", json,
-                                      out_value.materialProperties);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("exporterVersion", json, out_value.exporterVersion);
+  VRMC::ReadOptionalField("specVersion", json, out_value.specVersion);
+  VRMC::ReadOptionalField("meta", json, out_value.meta);
+  VRMC::ReadOptionalField("humanoid", json, out_value.humanoid);
+  VRMC::ReadOptionalField("firstPerson", json, out_value.firstPerson);
+  VRMC::ReadOptionalField("blendShapeMaster", json, out_value.blendShapeMaster);
+  VRMC::ReadOptionalField("secondaryAnimation", json,
+                          out_value.secondaryAnimation);
+  VRMC::ReadOptionalField("materialProperties", json,
+                          out_value.materialProperties);
 }
 } // namespace VRMC_VRM_0_0
 #endif
@@ -1219,56 +1143,49 @@ inline void from_json(nlohmann::json const &json, Vrm &out_value) {
 #ifdef USE_VRMC_VRM_1_0
 
 namespace VRMC_VRM_1_0 {
-struct TextureInfo : fx::gltf::NeverEmpty {
+struct TextureInfo {
   uint32_t index{};
   uint32_t texCoord{};
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct ShadingShiftTextureInfo : fx::gltf::NeverEmpty {
+struct ShadingShiftTextureInfo {
   uint32_t index{};
   uint32_t texCoord{};
   float scale = 1.f;
-  nlohmann::json extensionsAndExtras{};
 };
 
 enum class ObjectSpace : uint8_t { Model, Local };
-struct ColliderGroup : fx::gltf::NeverEmpty {
+struct ColliderGroup {
   std::string name;
   std::vector<uint32_t> colliders{};
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct SpringBoneJoint : fx::gltf::NeverEmpty {
+struct SpringBoneJoint {
   uint32_t node{};
   float hitRadius{};
   float stiffness = 1.f;
   float gravityPower{};
   std::vector<float> gravityDir = {0, -1, 0};
   float dragForce = 0.5f;
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct ColliderShape : fx::gltf::NeverEmpty {
-  struct Sphere : fx::gltf::NeverEmpty {
+struct ColliderShape {
+  struct Sphere {
     std::vector<float> offset = {0, 0, 0};
     float radius{};
-    nlohmann::json extensionsAndExtras{};
   };
 
   Sphere sphere;
-  struct Capsule : fx::gltf::NeverEmpty {
+  struct Capsule {
     std::vector<float> offset = {0, 0, 0};
     float radius{};
     std::vector<float> tail = {0, 0, 0};
-    nlohmann::json extensionsAndExtras{};
   };
 
   Capsule capsule;
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct MaterialColorBind : fx::gltf::NeverEmpty {
+struct MaterialColorBind {
   uint32_t material{};
   enum class MaterialColorType : uint8_t {
     Color,
@@ -1279,24 +1196,21 @@ struct MaterialColorBind : fx::gltf::NeverEmpty {
   };
   MaterialColorType type;
   std::vector<float> targetValue{};
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct MorphTargetBind : fx::gltf::NeverEmpty {
+struct MorphTargetBind {
   uint32_t node{};
   uint32_t index{};
   float weight{};
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct TextureTransformBind : fx::gltf::NeverEmpty {
+struct TextureTransformBind {
   uint32_t material{};
   std::vector<float> scale = {1, 1};
   std::vector<float> offset = {0, 0};
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct MeshAnnotation : fx::gltf::NeverEmpty {
+struct MeshAnnotation {
   uint32_t node{};
   enum class FirstPersonType : uint8_t {
     Auto,
@@ -1305,21 +1219,18 @@ struct MeshAnnotation : fx::gltf::NeverEmpty {
     FirstPersonOnly
   };
   FirstPersonType type;
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct HumanBone : fx::gltf::NeverEmpty {
+struct HumanBone {
   uint32_t node{};
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct LookAtRangeMap : fx::gltf::NeverEmpty {
+struct LookAtRangeMap {
   float inputMaxValue{};
   float outputScale{};
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct Meta : fx::gltf::NeverEmpty {
+struct Meta {
   std::string name;
   std::string version;
   std::vector<std::string> authors{};
@@ -1355,10 +1266,9 @@ struct Meta : fx::gltf::NeverEmpty {
   };
   ModificationType modification = ModificationType::Prohibited;
   std::string otherLicenseUrl;
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct AimConstraint : fx::gltf::NeverEmpty {
+struct AimConstraint {
   uint32_t source{};
   ObjectSpace sourceSpace;
   ObjectSpace destinationSpace;
@@ -1366,41 +1276,36 @@ struct AimConstraint : fx::gltf::NeverEmpty {
   std::vector<float> upVector = {0, 0, 1};
   std::vector<bool> freezeAxes = {true, true};
   float weight = 1.f;
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct PositionConstraint : fx::gltf::NeverEmpty {
+struct PositionConstraint {
   uint32_t source{};
   ObjectSpace sourceSpace;
   ObjectSpace destinationSpace;
   std::vector<bool> freezeAxes = {true, true, true};
   float weight = 1.f;
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct RotationConstraint : fx::gltf::NeverEmpty {
+struct RotationConstraint {
   uint32_t source{};
   ObjectSpace sourceSpace;
   ObjectSpace destinationSpace;
   std::vector<bool> freezeAxes = {true, true, true};
   float weight = 1.f;
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct Collider : fx::gltf::NeverEmpty {
+struct Collider {
   uint32_t node{};
   ColliderShape shape;
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct Spring : fx::gltf::NeverEmpty {
+struct Spring {
   std::string name;
   std::vector<SpringBoneJoint> joints{};
   std::vector<uint32_t> colliderGroups{};
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct HumanBones : fx::gltf::NeverEmpty {
+struct HumanBones {
   HumanBone hips;
   HumanBone spine;
   HumanBone chest;
@@ -1456,25 +1361,22 @@ struct HumanBones : fx::gltf::NeverEmpty {
   HumanBone rightLittleProximal;
   HumanBone rightLittleIntermediate;
   HumanBone rightLittleDistal;
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct Constraint : fx::gltf::NeverEmpty {
+struct Constraint {
   PositionConstraint position;
   RotationConstraint rotation;
   AimConstraint aim;
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct SpringBone : fx::gltf::NeverEmpty {
+struct SpringBone {
   std::string specVersion;
   std::vector<Collider> colliders{};
   std::vector<ColliderGroup> colliderGroups{};
   std::vector<Spring> springs{};
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct Expression : fx::gltf::NeverEmpty {
+struct Expression {
   std::vector<MorphTargetBind> morphTargetBinds{};
   std::vector<MaterialColorBind> materialColorBinds{};
   std::vector<TextureTransformBind> textureTransformBinds{};
@@ -1483,11 +1385,10 @@ struct Expression : fx::gltf::NeverEmpty {
   ExpressionOverrideType overrideBlink = ExpressionOverrideType::None;
   ExpressionOverrideType overrideLookAt = ExpressionOverrideType::None;
   ExpressionOverrideType overrideMouth = ExpressionOverrideType::None;
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct Expressions : fx::gltf::NeverEmpty {
-  struct Preset : fx::gltf::NeverEmpty {
+struct Expressions {
+  struct Preset {
     Expression happy;
     Expression angry;
     Expression sad;
@@ -1505,25 +1406,21 @@ struct Expressions : fx::gltf::NeverEmpty {
     Expression lookDown;
     Expression lookLeft;
     Expression lookRight;
-    nlohmann::json extensionsAndExtras{};
   };
 
   Preset preset;
   Expression custom;
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct FirstPerson : fx::gltf::NeverEmpty {
+struct FirstPerson {
   std::vector<MeshAnnotation> meshAnnotations{};
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct Humanoid : fx::gltf::NeverEmpty {
+struct Humanoid {
   HumanBones humanBones;
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct LookAt : fx::gltf::NeverEmpty {
+struct LookAt {
   std::vector<float> offsetFromHeadBone{};
   enum class LookAtType : uint8_t { Bone, Expression };
   LookAtType type;
@@ -1531,15 +1428,13 @@ struct LookAt : fx::gltf::NeverEmpty {
   LookAtRangeMap rangeMapHorizontalOuter;
   LookAtRangeMap rangeMapVerticalDown;
   LookAtRangeMap rangeMapVerticalUp;
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct MaterialsHdrEmissiveMultiplier : fx::gltf::NeverEmpty {
+struct MaterialsHdrEmissiveMultiplier {
   float emissiveMultiplier = 1.f;
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct MaterialsMtoon : fx::gltf::NeverEmpty {
+struct MaterialsMtoon {
   std::string specVersion;
   bool transparentWithZWrite{};
   uint32_t renderQueueOffsetNumber{};
@@ -1570,23 +1465,20 @@ struct MaterialsMtoon : fx::gltf::NeverEmpty {
   float uvAnimationScrollXSpeedFactor{};
   float uvAnimationScrollYSpeedFactor{};
   float uvAnimationRotationSpeedFactor{};
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct NodeConstraintextension : fx::gltf::NeverEmpty {
+struct NodeConstraintextension {
   std::string specVersion;
   Constraint constraint;
-  nlohmann::json extensionsAndExtras{};
 };
 
-struct Vrm : fx::gltf::NeverEmpty {
+struct Vrm {
   std::string specVersion;
   Meta meta;
   Humanoid humanoid;
   FirstPerson firstPerson;
   LookAt lookAt;
   Expressions expressions;
-  nlohmann::json extensionsAndExtras{};
 };
 inline void from_json(nlohmann::json const &json, ObjectSpace &out_value) {
   std::string type = json.get<std::string>();
@@ -1715,7 +1607,7 @@ inline void to_json(nlohmann::json &json, ObjectSpace const &in_value) {
     json = "local";
     break;
   default:
-    throw fx::gltf::invalid_gltf_document("Unknown ObjectSpace value");
+    throw std::runtime_error("Unknown ObjectSpace value");
   }
 }
 
@@ -1738,7 +1630,7 @@ inline void to_json(nlohmann::json &json,
     json = "outlineColor";
     break;
   default:
-    throw fx::gltf::invalid_gltf_document("Unknown MaterialColorType value");
+    throw std::runtime_error("Unknown MaterialColorType value");
   }
 }
 
@@ -1758,7 +1650,7 @@ inline void to_json(nlohmann::json &json,
     json = "firstPersonOnly";
     break;
   default:
-    throw fx::gltf::invalid_gltf_document("Unknown FirstPersonType value");
+    throw std::runtime_error("Unknown FirstPersonType value");
   }
 }
 
@@ -1775,7 +1667,7 @@ inline void to_json(nlohmann::json &json,
     json = "everyone";
     break;
   default:
-    throw fx::gltf::invalid_gltf_document("Unknown AvatarPermissionType value");
+    throw std::runtime_error("Unknown AvatarPermissionType value");
   }
 }
 
@@ -1792,7 +1684,7 @@ inline void to_json(nlohmann::json &json,
     json = "corporation";
     break;
   default:
-    throw fx::gltf::invalid_gltf_document("Unknown CommercialUsageType value");
+    throw std::runtime_error("Unknown CommercialUsageType value");
   }
 }
 
@@ -1806,7 +1698,7 @@ inline void to_json(nlohmann::json &json,
     json = "unnecessary";
     break;
   default:
-    throw fx::gltf::invalid_gltf_document("Unknown CreditNotationType value");
+    throw std::runtime_error("Unknown CreditNotationType value");
   }
 }
 
@@ -1823,7 +1715,7 @@ inline void to_json(nlohmann::json &json,
     json = "allowModificationRedistribution";
     break;
   default:
-    throw fx::gltf::invalid_gltf_document("Unknown ModificationType value");
+    throw std::runtime_error("Unknown ModificationType value");
   }
 }
 
@@ -1840,8 +1732,7 @@ inline void to_json(nlohmann::json &json,
     json = "blend";
     break;
   default:
-    throw fx::gltf::invalid_gltf_document(
-        "Unknown ExpressionOverrideType value");
+    throw std::runtime_error("Unknown ExpressionOverrideType value");
   }
 }
 
@@ -1854,7 +1745,7 @@ inline void to_json(nlohmann::json &json, LookAt::LookAtType const &in_value) {
     json = "expression";
     break;
   default:
-    throw fx::gltf::invalid_gltf_document("Unknown LookAtType value");
+    throw std::runtime_error("Unknown LookAtType value");
   }
 }
 
@@ -1871,844 +1762,669 @@ inline void to_json(nlohmann::json &json,
     json = "screenCoordinates";
     break;
   default:
-    throw fx::gltf::invalid_gltf_document("Unknown OutlineWidthMode value");
+    throw std::runtime_error("Unknown OutlineWidthMode value");
   }
 }
 inline void to_json(nlohmann::json &json, TextureInfo const &in_value) {
-  fx::gltf::detail::WriteField("index", json, in_value.index,
-                               static_cast<uint32_t>(0));
-  fx::gltf::detail::WriteField("texCoord", json, in_value.texCoord,
-                               static_cast<uint32_t>(0));
+  VRMC::WriteField("index", json, in_value.index, static_cast<uint32_t>(0));
+  VRMC::WriteField("texCoord", json, in_value.texCoord,
+                   static_cast<uint32_t>(0));
 }
 inline void to_json(nlohmann::json &json,
                     ShadingShiftTextureInfo const &in_value) {
-  fx::gltf::detail::WriteField("index", json, in_value.index,
-                               static_cast<uint32_t>(0));
-  fx::gltf::detail::WriteField("texCoord", json, in_value.texCoord,
-                               static_cast<uint32_t>(0));
-  fx::gltf::detail::WriteField("scale", json, in_value.scale, 1.f);
+  VRMC::WriteField("index", json, in_value.index, static_cast<uint32_t>(0));
+  VRMC::WriteField("texCoord", json, in_value.texCoord,
+                   static_cast<uint32_t>(0));
+  VRMC::WriteField("scale", json, in_value.scale, 1.f);
 }
 inline void to_json(nlohmann::json &json, ColliderGroup const &in_value) {
-  fx::gltf::detail::WriteField("name", json, in_value.name, {});
-  fx::gltf::detail::WriteField("colliders", json, in_value.colliders);
+  VRMC::WriteField("name", json, in_value.name, {});
+  VRMC::WriteField("colliders", json, in_value.colliders);
 }
 inline void to_json(nlohmann::json &json, SpringBoneJoint const &in_value) {
-  fx::gltf::detail::WriteField("node", json, in_value.node,
-                               static_cast<uint32_t>(0));
-  fx::gltf::detail::WriteField("hitRadius", json, in_value.hitRadius, 0.f);
-  fx::gltf::detail::WriteField("stiffness", json, in_value.stiffness, 1.f);
-  fx::gltf::detail::WriteField("gravityPower", json, in_value.gravityPower,
-                               0.f);
-  fx::gltf::detail::WriteField("gravityDir", json, in_value.gravityDir,
-                               {0, -1, 0});
-  fx::gltf::detail::WriteField("dragForce", json, in_value.dragForce, 0.5f);
+  VRMC::WriteField("node", json, in_value.node, static_cast<uint32_t>(0));
+  VRMC::WriteField("hitRadius", json, in_value.hitRadius, 0.f);
+  VRMC::WriteField("stiffness", json, in_value.stiffness, 1.f);
+  VRMC::WriteField("gravityPower", json, in_value.gravityPower, 0.f);
+  VRMC::WriteField("gravityDir", json, in_value.gravityDir, {0, -1, 0});
+  VRMC::WriteField("dragForce", json, in_value.dragForce, 0.5f);
 }
 inline void to_json(nlohmann::json &json, ColliderShape const &in_value) {
-  fx::gltf::detail::WriteField("sphere", json, in_value.sphere);
-  fx::gltf::detail::WriteField("capsule", json, in_value.capsule);
+  VRMC::WriteField("sphere", json, in_value.sphere);
+  VRMC::WriteField("capsule", json, in_value.capsule);
 }
 inline void to_json(nlohmann::json &json,
                     ColliderShape::Sphere const &in_value) {
-  fx::gltf::detail::WriteField("offset", json, in_value.offset, {0, 0, 0});
-  fx::gltf::detail::WriteField("radius", json, in_value.radius, 0.f);
+  VRMC::WriteField("offset", json, in_value.offset, {0, 0, 0});
+  VRMC::WriteField("radius", json, in_value.radius, 0.f);
 }
 inline void to_json(nlohmann::json &json,
                     ColliderShape::Capsule const &in_value) {
-  fx::gltf::detail::WriteField("offset", json, in_value.offset, {0, 0, 0});
-  fx::gltf::detail::WriteField("radius", json, in_value.radius, 0.f);
-  fx::gltf::detail::WriteField("tail", json, in_value.tail, {0, 0, 0});
+  VRMC::WriteField("offset", json, in_value.offset, {0, 0, 0});
+  VRMC::WriteField("radius", json, in_value.radius, 0.f);
+  VRMC::WriteField("tail", json, in_value.tail, {0, 0, 0});
 }
 inline void to_json(nlohmann::json &json, MaterialColorBind const &in_value) {
-  fx::gltf::detail::WriteField("material", json, in_value.material,
-                               static_cast<uint32_t>(0));
-  fx::gltf::detail::WriteField("type", json, in_value.type, {});
-  fx::gltf::detail::WriteField("targetValue", json, in_value.targetValue);
+  VRMC::WriteField("material", json, in_value.material,
+                   static_cast<uint32_t>(0));
+  VRMC::WriteField("type", json, in_value.type, {});
+  VRMC::WriteField("targetValue", json, in_value.targetValue);
 }
 inline void to_json(nlohmann::json &json, MorphTargetBind const &in_value) {
-  fx::gltf::detail::WriteField("node", json, in_value.node,
-                               static_cast<uint32_t>(0));
-  fx::gltf::detail::WriteField("index", json, in_value.index,
-                               static_cast<uint32_t>(0));
-  fx::gltf::detail::WriteField("weight", json, in_value.weight, 0.f);
+  VRMC::WriteField("node", json, in_value.node, static_cast<uint32_t>(0));
+  VRMC::WriteField("index", json, in_value.index, static_cast<uint32_t>(0));
+  VRMC::WriteField("weight", json, in_value.weight, 0.f);
 }
 inline void to_json(nlohmann::json &json,
                     TextureTransformBind const &in_value) {
-  fx::gltf::detail::WriteField("material", json, in_value.material,
-                               static_cast<uint32_t>(0));
-  fx::gltf::detail::WriteField("scale", json, in_value.scale, {1, 1});
-  fx::gltf::detail::WriteField("offset", json, in_value.offset, {0, 0});
+  VRMC::WriteField("material", json, in_value.material,
+                   static_cast<uint32_t>(0));
+  VRMC::WriteField("scale", json, in_value.scale, {1, 1});
+  VRMC::WriteField("offset", json, in_value.offset, {0, 0});
 }
 inline void to_json(nlohmann::json &json, MeshAnnotation const &in_value) {
-  fx::gltf::detail::WriteField("node", json, in_value.node,
-                               static_cast<uint32_t>(0));
-  fx::gltf::detail::WriteField("type", json, in_value.type, {});
+  VRMC::WriteField("node", json, in_value.node, static_cast<uint32_t>(0));
+  VRMC::WriteField("type", json, in_value.type, {});
 }
 inline void to_json(nlohmann::json &json, HumanBone const &in_value) {
-  fx::gltf::detail::WriteField("node", json, in_value.node,
-                               static_cast<uint32_t>(0));
+  VRMC::WriteField("node", json, in_value.node, static_cast<uint32_t>(0));
 }
 inline void to_json(nlohmann::json &json, LookAtRangeMap const &in_value) {
-  fx::gltf::detail::WriteField("inputMaxValue", json, in_value.inputMaxValue,
-                               0.f);
-  fx::gltf::detail::WriteField("outputScale", json, in_value.outputScale, 0.f);
+  VRMC::WriteField("inputMaxValue", json, in_value.inputMaxValue, 0.f);
+  VRMC::WriteField("outputScale", json, in_value.outputScale, 0.f);
 }
 inline void to_json(nlohmann::json &json, Meta const &in_value) {
-  fx::gltf::detail::WriteField("name", json, in_value.name, {});
-  fx::gltf::detail::WriteField("version", json, in_value.version, {});
-  fx::gltf::detail::WriteField("authors", json, in_value.authors);
-  fx::gltf::detail::WriteField("copyrightInformation", json,
-                               in_value.copyrightInformation, {});
-  fx::gltf::detail::WriteField("contactInformation", json,
-                               in_value.contactInformation, {});
-  fx::gltf::detail::WriteField("references", json, in_value.references);
-  fx::gltf::detail::WriteField("thirdPartyLicenses", json,
-                               in_value.thirdPartyLicenses, {});
-  fx::gltf::detail::WriteField("thumbnailImage", json, in_value.thumbnailImage,
-                               static_cast<uint32_t>(0));
-  fx::gltf::detail::WriteField("licenseUrl", json, in_value.licenseUrl, {});
-  fx::gltf::detail::WriteField("avatarPermission", json,
-                               in_value.avatarPermission,
-                               Meta::AvatarPermissionType::OnlyAuthor);
-  fx::gltf::detail::WriteField("allowExcessivelyViolentUsage", json,
-                               in_value.allowExcessivelyViolentUsage, false);
-  fx::gltf::detail::WriteField("allowExcessivelySexualUsage", json,
-                               in_value.allowExcessivelySexualUsage, false);
-  fx::gltf::detail::WriteField("commercialUsage", json,
-                               in_value.commercialUsage,
-                               Meta::CommercialUsageType::PersonalNonProfit);
-  fx::gltf::detail::WriteField("allowPoliticalOrReligiousUsage", json,
-                               in_value.allowPoliticalOrReligiousUsage, false);
-  fx::gltf::detail::WriteField("allowAntisocialOrHateUsage", json,
-                               in_value.allowAntisocialOrHateUsage, false);
-  fx::gltf::detail::WriteField("creditNotation", json, in_value.creditNotation,
-                               Meta::CreditNotationType::Required);
-  fx::gltf::detail::WriteField("allowRedistribution", json,
-                               in_value.allowRedistribution, false);
-  fx::gltf::detail::WriteField("modification", json, in_value.modification,
-                               Meta::ModificationType::Prohibited);
-  fx::gltf::detail::WriteField("otherLicenseUrl", json,
-                               in_value.otherLicenseUrl, {});
+  VRMC::WriteField("name", json, in_value.name, {});
+  VRMC::WriteField("version", json, in_value.version, {});
+  VRMC::WriteField("authors", json, in_value.authors);
+  VRMC::WriteField("copyrightInformation", json, in_value.copyrightInformation,
+                   {});
+  VRMC::WriteField("contactInformation", json, in_value.contactInformation, {});
+  VRMC::WriteField("references", json, in_value.references);
+  VRMC::WriteField("thirdPartyLicenses", json, in_value.thirdPartyLicenses, {});
+  VRMC::WriteField("thumbnailImage", json, in_value.thumbnailImage,
+                   static_cast<uint32_t>(0));
+  VRMC::WriteField("licenseUrl", json, in_value.licenseUrl, {});
+  VRMC::WriteField("avatarPermission", json, in_value.avatarPermission,
+                   Meta::AvatarPermissionType::OnlyAuthor);
+  VRMC::WriteField("allowExcessivelyViolentUsage", json,
+                   in_value.allowExcessivelyViolentUsage, false);
+  VRMC::WriteField("allowExcessivelySexualUsage", json,
+                   in_value.allowExcessivelySexualUsage, false);
+  VRMC::WriteField("commercialUsage", json, in_value.commercialUsage,
+                   Meta::CommercialUsageType::PersonalNonProfit);
+  VRMC::WriteField("allowPoliticalOrReligiousUsage", json,
+                   in_value.allowPoliticalOrReligiousUsage, false);
+  VRMC::WriteField("allowAntisocialOrHateUsage", json,
+                   in_value.allowAntisocialOrHateUsage, false);
+  VRMC::WriteField("creditNotation", json, in_value.creditNotation,
+                   Meta::CreditNotationType::Required);
+  VRMC::WriteField("allowRedistribution", json, in_value.allowRedistribution,
+                   false);
+  VRMC::WriteField("modification", json, in_value.modification,
+                   Meta::ModificationType::Prohibited);
+  VRMC::WriteField("otherLicenseUrl", json, in_value.otherLicenseUrl, {});
 }
 inline void to_json(nlohmann::json &json, AimConstraint const &in_value) {
-  fx::gltf::detail::WriteField("source", json, in_value.source,
-                               static_cast<uint32_t>(0));
-  fx::gltf::detail::WriteField("sourceSpace", json, in_value.sourceSpace, {});
-  fx::gltf::detail::WriteField("destinationSpace", json,
-                               in_value.destinationSpace, {});
-  fx::gltf::detail::WriteField("aimVector", json, in_value.aimVector,
-                               {0, 0, 1});
-  fx::gltf::detail::WriteField("upVector", json, in_value.upVector, {0, 0, 1});
-  fx::gltf::detail::WriteField("freezeAxes", json, in_value.freezeAxes,
-                               {true, true});
-  fx::gltf::detail::WriteField("weight", json, in_value.weight, 1.f);
+  VRMC::WriteField("source", json, in_value.source, static_cast<uint32_t>(0));
+  VRMC::WriteField("sourceSpace", json, in_value.sourceSpace, {});
+  VRMC::WriteField("destinationSpace", json, in_value.destinationSpace, {});
+  VRMC::WriteField("aimVector", json, in_value.aimVector, {0, 0, 1});
+  VRMC::WriteField("upVector", json, in_value.upVector, {0, 0, 1});
+  VRMC::WriteField("freezeAxes", json, in_value.freezeAxes, {true, true});
+  VRMC::WriteField("weight", json, in_value.weight, 1.f);
 }
 inline void to_json(nlohmann::json &json, PositionConstraint const &in_value) {
-  fx::gltf::detail::WriteField("source", json, in_value.source,
-                               static_cast<uint32_t>(0));
-  fx::gltf::detail::WriteField("sourceSpace", json, in_value.sourceSpace, {});
-  fx::gltf::detail::WriteField("destinationSpace", json,
-                               in_value.destinationSpace, {});
-  fx::gltf::detail::WriteField("freezeAxes", json, in_value.freezeAxes,
-                               {true, true, true});
-  fx::gltf::detail::WriteField("weight", json, in_value.weight, 1.f);
+  VRMC::WriteField("source", json, in_value.source, static_cast<uint32_t>(0));
+  VRMC::WriteField("sourceSpace", json, in_value.sourceSpace, {});
+  VRMC::WriteField("destinationSpace", json, in_value.destinationSpace, {});
+  VRMC::WriteField("freezeAxes", json, in_value.freezeAxes, {true, true, true});
+  VRMC::WriteField("weight", json, in_value.weight, 1.f);
 }
 inline void to_json(nlohmann::json &json, RotationConstraint const &in_value) {
-  fx::gltf::detail::WriteField("source", json, in_value.source,
-                               static_cast<uint32_t>(0));
-  fx::gltf::detail::WriteField("sourceSpace", json, in_value.sourceSpace, {});
-  fx::gltf::detail::WriteField("destinationSpace", json,
-                               in_value.destinationSpace, {});
-  fx::gltf::detail::WriteField("freezeAxes", json, in_value.freezeAxes,
-                               {true, true, true});
-  fx::gltf::detail::WriteField("weight", json, in_value.weight, 1.f);
+  VRMC::WriteField("source", json, in_value.source, static_cast<uint32_t>(0));
+  VRMC::WriteField("sourceSpace", json, in_value.sourceSpace, {});
+  VRMC::WriteField("destinationSpace", json, in_value.destinationSpace, {});
+  VRMC::WriteField("freezeAxes", json, in_value.freezeAxes, {true, true, true});
+  VRMC::WriteField("weight", json, in_value.weight, 1.f);
 }
 inline void to_json(nlohmann::json &json, Collider const &in_value) {
-  fx::gltf::detail::WriteField("node", json, in_value.node,
-                               static_cast<uint32_t>(0));
-  fx::gltf::detail::WriteField("shape", json, in_value.shape);
+  VRMC::WriteField("node", json, in_value.node, static_cast<uint32_t>(0));
+  VRMC::WriteField("shape", json, in_value.shape);
 }
 inline void to_json(nlohmann::json &json, Spring const &in_value) {
-  fx::gltf::detail::WriteField("name", json, in_value.name, {});
-  fx::gltf::detail::WriteField("joints", json, in_value.joints);
-  fx::gltf::detail::WriteField("colliderGroups", json, in_value.colliderGroups);
+  VRMC::WriteField("name", json, in_value.name, {});
+  VRMC::WriteField("joints", json, in_value.joints);
+  VRMC::WriteField("colliderGroups", json, in_value.colliderGroups);
 }
 inline void to_json(nlohmann::json &json, HumanBones const &in_value) {
-  fx::gltf::detail::WriteField("hips", json, in_value.hips);
-  fx::gltf::detail::WriteField("spine", json, in_value.spine);
-  fx::gltf::detail::WriteField("chest", json, in_value.chest);
-  fx::gltf::detail::WriteField("upperChest", json, in_value.upperChest);
-  fx::gltf::detail::WriteField("neck", json, in_value.neck);
-  fx::gltf::detail::WriteField("head", json, in_value.head);
-  fx::gltf::detail::WriteField("leftEye", json, in_value.leftEye);
-  fx::gltf::detail::WriteField("rightEye", json, in_value.rightEye);
-  fx::gltf::detail::WriteField("jaw", json, in_value.jaw);
-  fx::gltf::detail::WriteField("leftUpperLeg", json, in_value.leftUpperLeg);
-  fx::gltf::detail::WriteField("leftLowerLeg", json, in_value.leftLowerLeg);
-  fx::gltf::detail::WriteField("leftFoot", json, in_value.leftFoot);
-  fx::gltf::detail::WriteField("leftToes", json, in_value.leftToes);
-  fx::gltf::detail::WriteField("rightUpperLeg", json, in_value.rightUpperLeg);
-  fx::gltf::detail::WriteField("rightLowerLeg", json, in_value.rightLowerLeg);
-  fx::gltf::detail::WriteField("rightFoot", json, in_value.rightFoot);
-  fx::gltf::detail::WriteField("rightToes", json, in_value.rightToes);
-  fx::gltf::detail::WriteField("leftShoulder", json, in_value.leftShoulder);
-  fx::gltf::detail::WriteField("leftUpperArm", json, in_value.leftUpperArm);
-  fx::gltf::detail::WriteField("leftLowerArm", json, in_value.leftLowerArm);
-  fx::gltf::detail::WriteField("leftHand", json, in_value.leftHand);
-  fx::gltf::detail::WriteField("rightShoulder", json, in_value.rightShoulder);
-  fx::gltf::detail::WriteField("rightUpperArm", json, in_value.rightUpperArm);
-  fx::gltf::detail::WriteField("rightLowerArm", json, in_value.rightLowerArm);
-  fx::gltf::detail::WriteField("rightHand", json, in_value.rightHand);
-  fx::gltf::detail::WriteField("leftThumbProximal", json,
-                               in_value.leftThumbProximal);
-  fx::gltf::detail::WriteField("leftThumbIntermediate", json,
-                               in_value.leftThumbIntermediate);
-  fx::gltf::detail::WriteField("leftThumbDistal", json,
-                               in_value.leftThumbDistal);
-  fx::gltf::detail::WriteField("leftIndexProximal", json,
-                               in_value.leftIndexProximal);
-  fx::gltf::detail::WriteField("leftIndexIntermediate", json,
-                               in_value.leftIndexIntermediate);
-  fx::gltf::detail::WriteField("leftIndexDistal", json,
-                               in_value.leftIndexDistal);
-  fx::gltf::detail::WriteField("leftMiddleProximal", json,
-                               in_value.leftMiddleProximal);
-  fx::gltf::detail::WriteField("leftMiddleIntermediate", json,
-                               in_value.leftMiddleIntermediate);
-  fx::gltf::detail::WriteField("leftMiddleDistal", json,
-                               in_value.leftMiddleDistal);
-  fx::gltf::detail::WriteField("leftRingProximal", json,
-                               in_value.leftRingProximal);
-  fx::gltf::detail::WriteField("leftRingIntermediate", json,
-                               in_value.leftRingIntermediate);
-  fx::gltf::detail::WriteField("leftRingDistal", json, in_value.leftRingDistal);
-  fx::gltf::detail::WriteField("leftLittleProximal", json,
-                               in_value.leftLittleProximal);
-  fx::gltf::detail::WriteField("leftLittleIntermediate", json,
-                               in_value.leftLittleIntermediate);
-  fx::gltf::detail::WriteField("leftLittleDistal", json,
-                               in_value.leftLittleDistal);
-  fx::gltf::detail::WriteField("rightThumbProximal", json,
-                               in_value.rightThumbProximal);
-  fx::gltf::detail::WriteField("rightThumbIntermediate", json,
-                               in_value.rightThumbIntermediate);
-  fx::gltf::detail::WriteField("rightThumbDistal", json,
-                               in_value.rightThumbDistal);
-  fx::gltf::detail::WriteField("rightIndexProximal", json,
-                               in_value.rightIndexProximal);
-  fx::gltf::detail::WriteField("rightIndexIntermediate", json,
-                               in_value.rightIndexIntermediate);
-  fx::gltf::detail::WriteField("rightIndexDistal", json,
-                               in_value.rightIndexDistal);
-  fx::gltf::detail::WriteField("rightMiddleProximal", json,
-                               in_value.rightMiddleProximal);
-  fx::gltf::detail::WriteField("rightMiddleIntermediate", json,
-                               in_value.rightMiddleIntermediate);
-  fx::gltf::detail::WriteField("rightMiddleDistal", json,
-                               in_value.rightMiddleDistal);
-  fx::gltf::detail::WriteField("rightRingProximal", json,
-                               in_value.rightRingProximal);
-  fx::gltf::detail::WriteField("rightRingIntermediate", json,
-                               in_value.rightRingIntermediate);
-  fx::gltf::detail::WriteField("rightRingDistal", json,
-                               in_value.rightRingDistal);
-  fx::gltf::detail::WriteField("rightLittleProximal", json,
-                               in_value.rightLittleProximal);
-  fx::gltf::detail::WriteField("rightLittleIntermediate", json,
-                               in_value.rightLittleIntermediate);
-  fx::gltf::detail::WriteField("rightLittleDistal", json,
-                               in_value.rightLittleDistal);
+  VRMC::WriteField("hips", json, in_value.hips);
+  VRMC::WriteField("spine", json, in_value.spine);
+  VRMC::WriteField("chest", json, in_value.chest);
+  VRMC::WriteField("upperChest", json, in_value.upperChest);
+  VRMC::WriteField("neck", json, in_value.neck);
+  VRMC::WriteField("head", json, in_value.head);
+  VRMC::WriteField("leftEye", json, in_value.leftEye);
+  VRMC::WriteField("rightEye", json, in_value.rightEye);
+  VRMC::WriteField("jaw", json, in_value.jaw);
+  VRMC::WriteField("leftUpperLeg", json, in_value.leftUpperLeg);
+  VRMC::WriteField("leftLowerLeg", json, in_value.leftLowerLeg);
+  VRMC::WriteField("leftFoot", json, in_value.leftFoot);
+  VRMC::WriteField("leftToes", json, in_value.leftToes);
+  VRMC::WriteField("rightUpperLeg", json, in_value.rightUpperLeg);
+  VRMC::WriteField("rightLowerLeg", json, in_value.rightLowerLeg);
+  VRMC::WriteField("rightFoot", json, in_value.rightFoot);
+  VRMC::WriteField("rightToes", json, in_value.rightToes);
+  VRMC::WriteField("leftShoulder", json, in_value.leftShoulder);
+  VRMC::WriteField("leftUpperArm", json, in_value.leftUpperArm);
+  VRMC::WriteField("leftLowerArm", json, in_value.leftLowerArm);
+  VRMC::WriteField("leftHand", json, in_value.leftHand);
+  VRMC::WriteField("rightShoulder", json, in_value.rightShoulder);
+  VRMC::WriteField("rightUpperArm", json, in_value.rightUpperArm);
+  VRMC::WriteField("rightLowerArm", json, in_value.rightLowerArm);
+  VRMC::WriteField("rightHand", json, in_value.rightHand);
+  VRMC::WriteField("leftThumbProximal", json, in_value.leftThumbProximal);
+  VRMC::WriteField("leftThumbIntermediate", json,
+                   in_value.leftThumbIntermediate);
+  VRMC::WriteField("leftThumbDistal", json, in_value.leftThumbDistal);
+  VRMC::WriteField("leftIndexProximal", json, in_value.leftIndexProximal);
+  VRMC::WriteField("leftIndexIntermediate", json,
+                   in_value.leftIndexIntermediate);
+  VRMC::WriteField("leftIndexDistal", json, in_value.leftIndexDistal);
+  VRMC::WriteField("leftMiddleProximal", json, in_value.leftMiddleProximal);
+  VRMC::WriteField("leftMiddleIntermediate", json,
+                   in_value.leftMiddleIntermediate);
+  VRMC::WriteField("leftMiddleDistal", json, in_value.leftMiddleDistal);
+  VRMC::WriteField("leftRingProximal", json, in_value.leftRingProximal);
+  VRMC::WriteField("leftRingIntermediate", json, in_value.leftRingIntermediate);
+  VRMC::WriteField("leftRingDistal", json, in_value.leftRingDistal);
+  VRMC::WriteField("leftLittleProximal", json, in_value.leftLittleProximal);
+  VRMC::WriteField("leftLittleIntermediate", json,
+                   in_value.leftLittleIntermediate);
+  VRMC::WriteField("leftLittleDistal", json, in_value.leftLittleDistal);
+  VRMC::WriteField("rightThumbProximal", json, in_value.rightThumbProximal);
+  VRMC::WriteField("rightThumbIntermediate", json,
+                   in_value.rightThumbIntermediate);
+  VRMC::WriteField("rightThumbDistal", json, in_value.rightThumbDistal);
+  VRMC::WriteField("rightIndexProximal", json, in_value.rightIndexProximal);
+  VRMC::WriteField("rightIndexIntermediate", json,
+                   in_value.rightIndexIntermediate);
+  VRMC::WriteField("rightIndexDistal", json, in_value.rightIndexDistal);
+  VRMC::WriteField("rightMiddleProximal", json, in_value.rightMiddleProximal);
+  VRMC::WriteField("rightMiddleIntermediate", json,
+                   in_value.rightMiddleIntermediate);
+  VRMC::WriteField("rightMiddleDistal", json, in_value.rightMiddleDistal);
+  VRMC::WriteField("rightRingProximal", json, in_value.rightRingProximal);
+  VRMC::WriteField("rightRingIntermediate", json,
+                   in_value.rightRingIntermediate);
+  VRMC::WriteField("rightRingDistal", json, in_value.rightRingDistal);
+  VRMC::WriteField("rightLittleProximal", json, in_value.rightLittleProximal);
+  VRMC::WriteField("rightLittleIntermediate", json,
+                   in_value.rightLittleIntermediate);
+  VRMC::WriteField("rightLittleDistal", json, in_value.rightLittleDistal);
 }
 inline void to_json(nlohmann::json &json, Constraint const &in_value) {
-  fx::gltf::detail::WriteField("position", json, in_value.position);
-  fx::gltf::detail::WriteField("rotation", json, in_value.rotation);
-  fx::gltf::detail::WriteField("aim", json, in_value.aim);
+  VRMC::WriteField("position", json, in_value.position);
+  VRMC::WriteField("rotation", json, in_value.rotation);
+  VRMC::WriteField("aim", json, in_value.aim);
 }
 inline void to_json(nlohmann::json &json, SpringBone const &in_value) {
-  fx::gltf::detail::WriteField("specVersion", json, in_value.specVersion, {});
-  fx::gltf::detail::WriteField("colliders", json, in_value.colliders);
-  fx::gltf::detail::WriteField("colliderGroups", json, in_value.colliderGroups);
-  fx::gltf::detail::WriteField("springs", json, in_value.springs);
+  VRMC::WriteField("specVersion", json, in_value.specVersion, {});
+  VRMC::WriteField("colliders", json, in_value.colliders);
+  VRMC::WriteField("colliderGroups", json, in_value.colliderGroups);
+  VRMC::WriteField("springs", json, in_value.springs);
 }
 inline void to_json(nlohmann::json &json, Expression const &in_value) {
-  fx::gltf::detail::WriteField("morphTargetBinds", json,
-                               in_value.morphTargetBinds);
-  fx::gltf::detail::WriteField("materialColorBinds", json,
-                               in_value.materialColorBinds);
-  fx::gltf::detail::WriteField("textureTransformBinds", json,
-                               in_value.textureTransformBinds);
-  fx::gltf::detail::WriteField("isBinary", json, in_value.isBinary, false);
-  fx::gltf::detail::WriteField("overrideBlink", json, in_value.overrideBlink,
-                               Expression::ExpressionOverrideType::None);
-  fx::gltf::detail::WriteField("overrideLookAt", json, in_value.overrideLookAt,
-                               Expression::ExpressionOverrideType::None);
-  fx::gltf::detail::WriteField("overrideMouth", json, in_value.overrideMouth,
-                               Expression::ExpressionOverrideType::None);
+  VRMC::WriteField("morphTargetBinds", json, in_value.morphTargetBinds);
+  VRMC::WriteField("materialColorBinds", json, in_value.materialColorBinds);
+  VRMC::WriteField("textureTransformBinds", json,
+                   in_value.textureTransformBinds);
+  VRMC::WriteField("isBinary", json, in_value.isBinary, false);
+  VRMC::WriteField("overrideBlink", json, in_value.overrideBlink,
+                   Expression::ExpressionOverrideType::None);
+  VRMC::WriteField("overrideLookAt", json, in_value.overrideLookAt,
+                   Expression::ExpressionOverrideType::None);
+  VRMC::WriteField("overrideMouth", json, in_value.overrideMouth,
+                   Expression::ExpressionOverrideType::None);
 }
 inline void to_json(nlohmann::json &json, Expressions const &in_value) {
-  fx::gltf::detail::WriteField("preset", json, in_value.preset);
-  fx::gltf::detail::WriteField("custom", json, in_value.custom);
+  VRMC::WriteField("preset", json, in_value.preset);
+  VRMC::WriteField("custom", json, in_value.custom);
 }
 inline void to_json(nlohmann::json &json, Expressions::Preset const &in_value) {
-  fx::gltf::detail::WriteField("happy", json, in_value.happy);
-  fx::gltf::detail::WriteField("angry", json, in_value.angry);
-  fx::gltf::detail::WriteField("sad", json, in_value.sad);
-  fx::gltf::detail::WriteField("relaxed", json, in_value.relaxed);
-  fx::gltf::detail::WriteField("surprised", json, in_value.surprised);
-  fx::gltf::detail::WriteField("aa", json, in_value.aa);
-  fx::gltf::detail::WriteField("ih", json, in_value.ih);
-  fx::gltf::detail::WriteField("ou", json, in_value.ou);
-  fx::gltf::detail::WriteField("ee", json, in_value.ee);
-  fx::gltf::detail::WriteField("oh", json, in_value.oh);
-  fx::gltf::detail::WriteField("blink", json, in_value.blink);
-  fx::gltf::detail::WriteField("blinkLeft", json, in_value.blinkLeft);
-  fx::gltf::detail::WriteField("blinkRight", json, in_value.blinkRight);
-  fx::gltf::detail::WriteField("lookUp", json, in_value.lookUp);
-  fx::gltf::detail::WriteField("lookDown", json, in_value.lookDown);
-  fx::gltf::detail::WriteField("lookLeft", json, in_value.lookLeft);
-  fx::gltf::detail::WriteField("lookRight", json, in_value.lookRight);
+  VRMC::WriteField("happy", json, in_value.happy);
+  VRMC::WriteField("angry", json, in_value.angry);
+  VRMC::WriteField("sad", json, in_value.sad);
+  VRMC::WriteField("relaxed", json, in_value.relaxed);
+  VRMC::WriteField("surprised", json, in_value.surprised);
+  VRMC::WriteField("aa", json, in_value.aa);
+  VRMC::WriteField("ih", json, in_value.ih);
+  VRMC::WriteField("ou", json, in_value.ou);
+  VRMC::WriteField("ee", json, in_value.ee);
+  VRMC::WriteField("oh", json, in_value.oh);
+  VRMC::WriteField("blink", json, in_value.blink);
+  VRMC::WriteField("blinkLeft", json, in_value.blinkLeft);
+  VRMC::WriteField("blinkRight", json, in_value.blinkRight);
+  VRMC::WriteField("lookUp", json, in_value.lookUp);
+  VRMC::WriteField("lookDown", json, in_value.lookDown);
+  VRMC::WriteField("lookLeft", json, in_value.lookLeft);
+  VRMC::WriteField("lookRight", json, in_value.lookRight);
 }
 inline void to_json(nlohmann::json &json, FirstPerson const &in_value) {
-  fx::gltf::detail::WriteField("meshAnnotations", json,
-                               in_value.meshAnnotations);
+  VRMC::WriteField("meshAnnotations", json, in_value.meshAnnotations);
 }
 inline void to_json(nlohmann::json &json, Humanoid const &in_value) {
-  fx::gltf::detail::WriteField("humanBones", json, in_value.humanBones);
+  VRMC::WriteField("humanBones", json, in_value.humanBones);
 }
 inline void to_json(nlohmann::json &json, LookAt const &in_value) {
-  fx::gltf::detail::WriteField("offsetFromHeadBone", json,
-                               in_value.offsetFromHeadBone);
-  fx::gltf::detail::WriteField("type", json, in_value.type, {});
-  fx::gltf::detail::WriteField("rangeMapHorizontalInner", json,
-                               in_value.rangeMapHorizontalInner);
-  fx::gltf::detail::WriteField("rangeMapHorizontalOuter", json,
-                               in_value.rangeMapHorizontalOuter);
-  fx::gltf::detail::WriteField("rangeMapVerticalDown", json,
-                               in_value.rangeMapVerticalDown);
-  fx::gltf::detail::WriteField("rangeMapVerticalUp", json,
-                               in_value.rangeMapVerticalUp);
+  VRMC::WriteField("offsetFromHeadBone", json, in_value.offsetFromHeadBone);
+  VRMC::WriteField("type", json, in_value.type, {});
+  VRMC::WriteField("rangeMapHorizontalInner", json,
+                   in_value.rangeMapHorizontalInner);
+  VRMC::WriteField("rangeMapHorizontalOuter", json,
+                   in_value.rangeMapHorizontalOuter);
+  VRMC::WriteField("rangeMapVerticalDown", json, in_value.rangeMapVerticalDown);
+  VRMC::WriteField("rangeMapVerticalUp", json, in_value.rangeMapVerticalUp);
 }
 inline void to_json(nlohmann::json &json,
                     MaterialsHdrEmissiveMultiplier const &in_value) {
-  fx::gltf::detail::WriteField("emissiveMultiplier", json,
-                               in_value.emissiveMultiplier, 1.f);
+  VRMC::WriteField("emissiveMultiplier", json, in_value.emissiveMultiplier,
+                   1.f);
 }
 inline void to_json(nlohmann::json &json, MaterialsMtoon const &in_value) {
-  fx::gltf::detail::WriteField("specVersion", json, in_value.specVersion, {});
-  fx::gltf::detail::WriteField("transparentWithZWrite", json,
-                               in_value.transparentWithZWrite, false);
-  fx::gltf::detail::WriteField("renderQueueOffsetNumber", json,
-                               in_value.renderQueueOffsetNumber,
-                               static_cast<uint32_t>(0));
-  fx::gltf::detail::WriteField("shadeColorFactor", json,
-                               in_value.shadeColorFactor, {1, 1, 1});
-  fx::gltf::detail::WriteField("shadeMultiplyTexture", json,
-                               in_value.shadeMultiplyTexture);
-  fx::gltf::detail::WriteField("shadingShiftFactor", json,
-                               in_value.shadingShiftFactor, 0.f);
-  fx::gltf::detail::WriteField("shadingShiftTexture", json,
-                               in_value.shadingShiftTexture);
-  fx::gltf::detail::WriteField("shadingToonyFactor", json,
-                               in_value.shadingToonyFactor, 0.9f);
-  fx::gltf::detail::WriteField("giEqualizationFactor", json,
-                               in_value.giEqualizationFactor, 0.9f);
-  fx::gltf::detail::WriteField("matcapFactor", json, in_value.matcapFactor,
-                               {1, 1, 1});
-  fx::gltf::detail::WriteField("matcapTexture", json, in_value.matcapTexture);
-  fx::gltf::detail::WriteField("parametricRimColorFactor", json,
-                               in_value.parametricRimColorFactor, {0, 0, 0});
-  fx::gltf::detail::WriteField("rimMultiplyTexture", json,
-                               in_value.rimMultiplyTexture);
-  fx::gltf::detail::WriteField("rimLightingMixFactor", json,
-                               in_value.rimLightingMixFactor, 0.f);
-  fx::gltf::detail::WriteField("parametricRimFresnelPowerFactor", json,
-                               in_value.parametricRimFresnelPowerFactor, 1.f);
-  fx::gltf::detail::WriteField("parametricRimLiftFactor", json,
-                               in_value.parametricRimLiftFactor, 0.f);
-  fx::gltf::detail::WriteField("outlineWidthMode", json,
-                               in_value.outlineWidthMode,
-                               MaterialsMtoon::OutlineWidthMode::None);
-  fx::gltf::detail::WriteField("outlineWidthFactor", json,
-                               in_value.outlineWidthFactor, 0.f);
-  fx::gltf::detail::WriteField("outlineWidthMultiplyTexture", json,
-                               in_value.outlineWidthMultiplyTexture);
-  fx::gltf::detail::WriteField("outlineColorFactor", json,
-                               in_value.outlineColorFactor, {0, 0, 0});
-  fx::gltf::detail::WriteField("outlineLightingMixFactor", json,
-                               in_value.outlineLightingMixFactor, 1.f);
-  fx::gltf::detail::WriteField("uvAnimationMaskTexture", json,
-                               in_value.uvAnimationMaskTexture);
-  fx::gltf::detail::WriteField("uvAnimationScrollXSpeedFactor", json,
-                               in_value.uvAnimationScrollXSpeedFactor, 0.f);
-  fx::gltf::detail::WriteField("uvAnimationScrollYSpeedFactor", json,
-                               in_value.uvAnimationScrollYSpeedFactor, 0.f);
-  fx::gltf::detail::WriteField("uvAnimationRotationSpeedFactor", json,
-                               in_value.uvAnimationRotationSpeedFactor, 0.f);
+  VRMC::WriteField("specVersion", json, in_value.specVersion, {});
+  VRMC::WriteField("transparentWithZWrite", json,
+                   in_value.transparentWithZWrite, false);
+  VRMC::WriteField("renderQueueOffsetNumber", json,
+                   in_value.renderQueueOffsetNumber, static_cast<uint32_t>(0));
+  VRMC::WriteField("shadeColorFactor", json, in_value.shadeColorFactor,
+                   {1, 1, 1});
+  VRMC::WriteField("shadeMultiplyTexture", json, in_value.shadeMultiplyTexture);
+  VRMC::WriteField("shadingShiftFactor", json, in_value.shadingShiftFactor,
+                   0.f);
+  VRMC::WriteField("shadingShiftTexture", json, in_value.shadingShiftTexture);
+  VRMC::WriteField("shadingToonyFactor", json, in_value.shadingToonyFactor,
+                   0.9f);
+  VRMC::WriteField("giEqualizationFactor", json, in_value.giEqualizationFactor,
+                   0.9f);
+  VRMC::WriteField("matcapFactor", json, in_value.matcapFactor, {1, 1, 1});
+  VRMC::WriteField("matcapTexture", json, in_value.matcapTexture);
+  VRMC::WriteField("parametricRimColorFactor", json,
+                   in_value.parametricRimColorFactor, {0, 0, 0});
+  VRMC::WriteField("rimMultiplyTexture", json, in_value.rimMultiplyTexture);
+  VRMC::WriteField("rimLightingMixFactor", json, in_value.rimLightingMixFactor,
+                   0.f);
+  VRMC::WriteField("parametricRimFresnelPowerFactor", json,
+                   in_value.parametricRimFresnelPowerFactor, 1.f);
+  VRMC::WriteField("parametricRimLiftFactor", json,
+                   in_value.parametricRimLiftFactor, 0.f);
+  VRMC::WriteField("outlineWidthMode", json, in_value.outlineWidthMode,
+                   MaterialsMtoon::OutlineWidthMode::None);
+  VRMC::WriteField("outlineWidthFactor", json, in_value.outlineWidthFactor,
+                   0.f);
+  VRMC::WriteField("outlineWidthMultiplyTexture", json,
+                   in_value.outlineWidthMultiplyTexture);
+  VRMC::WriteField("outlineColorFactor", json, in_value.outlineColorFactor,
+                   {0, 0, 0});
+  VRMC::WriteField("outlineLightingMixFactor", json,
+                   in_value.outlineLightingMixFactor, 1.f);
+  VRMC::WriteField("uvAnimationMaskTexture", json,
+                   in_value.uvAnimationMaskTexture);
+  VRMC::WriteField("uvAnimationScrollXSpeedFactor", json,
+                   in_value.uvAnimationScrollXSpeedFactor, 0.f);
+  VRMC::WriteField("uvAnimationScrollYSpeedFactor", json,
+                   in_value.uvAnimationScrollYSpeedFactor, 0.f);
+  VRMC::WriteField("uvAnimationRotationSpeedFactor", json,
+                   in_value.uvAnimationRotationSpeedFactor, 0.f);
 }
 inline void to_json(nlohmann::json &json,
                     NodeConstraintextension const &in_value) {
-  fx::gltf::detail::WriteField("specVersion", json, in_value.specVersion, {});
-  fx::gltf::detail::WriteField("constraint", json, in_value.constraint);
+  VRMC::WriteField("specVersion", json, in_value.specVersion, {});
+  VRMC::WriteField("constraint", json, in_value.constraint);
 }
 inline void to_json(nlohmann::json &json, Vrm const &in_value) {
-  fx::gltf::detail::WriteField("specVersion", json, in_value.specVersion, {});
-  fx::gltf::detail::WriteField("meta", json, in_value.meta);
-  fx::gltf::detail::WriteField("humanoid", json, in_value.humanoid);
-  fx::gltf::detail::WriteField("firstPerson", json, in_value.firstPerson);
-  fx::gltf::detail::WriteField("lookAt", json, in_value.lookAt);
-  fx::gltf::detail::WriteField("expressions", json, in_value.expressions);
+  VRMC::WriteField("specVersion", json, in_value.specVersion, {});
+  VRMC::WriteField("meta", json, in_value.meta);
+  VRMC::WriteField("humanoid", json, in_value.humanoid);
+  VRMC::WriteField("firstPerson", json, in_value.firstPerson);
+  VRMC::WriteField("lookAt", json, in_value.lookAt);
+  VRMC::WriteField("expressions", json, in_value.expressions);
 }
 inline void from_json(nlohmann::json const &json, TextureInfo &out_value) {
-  fx::gltf::detail::ReadRequiredField("index", json, out_value.index);
-  fx::gltf::detail::ReadOptionalField("texCoord", json, out_value.texCoord);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadRequiredField("index", json, out_value.index);
+  VRMC::ReadOptionalField("texCoord", json, out_value.texCoord);
 }
 inline void from_json(nlohmann::json const &json,
                       ShadingShiftTextureInfo &out_value) {
-  fx::gltf::detail::ReadOptionalField("index", json, out_value.index);
-  fx::gltf::detail::ReadOptionalField("texCoord", json, out_value.texCoord);
-  fx::gltf::detail::ReadOptionalField("scale", json, out_value.scale);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("index", json, out_value.index);
+  VRMC::ReadOptionalField("texCoord", json, out_value.texCoord);
+  VRMC::ReadOptionalField("scale", json, out_value.scale);
 }
 inline void from_json(nlohmann::json const &json, ColliderGroup &out_value) {
-  fx::gltf::detail::ReadOptionalField("name", json, out_value.name);
-  fx::gltf::detail::ReadRequiredField("colliders", json, out_value.colliders);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("name", json, out_value.name);
+  VRMC::ReadRequiredField("colliders", json, out_value.colliders);
 }
 inline void from_json(nlohmann::json const &json, SpringBoneJoint &out_value) {
-  fx::gltf::detail::ReadRequiredField("node", json, out_value.node);
-  fx::gltf::detail::ReadOptionalField("hitRadius", json, out_value.hitRadius);
-  fx::gltf::detail::ReadOptionalField("stiffness", json, out_value.stiffness);
-  fx::gltf::detail::ReadOptionalField("gravityPower", json,
-                                      out_value.gravityPower);
-  fx::gltf::detail::ReadOptionalField("gravityDir", json, out_value.gravityDir);
-  fx::gltf::detail::ReadOptionalField("dragForce", json, out_value.dragForce);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadRequiredField("node", json, out_value.node);
+  VRMC::ReadOptionalField("hitRadius", json, out_value.hitRadius);
+  VRMC::ReadOptionalField("stiffness", json, out_value.stiffness);
+  VRMC::ReadOptionalField("gravityPower", json, out_value.gravityPower);
+  VRMC::ReadOptionalField("gravityDir", json, out_value.gravityDir);
+  VRMC::ReadOptionalField("dragForce", json, out_value.dragForce);
 }
 inline void from_json(nlohmann::json const &json, ColliderShape &out_value) {
-  fx::gltf::detail::ReadOptionalField("sphere", json, out_value.sphere);
-  fx::gltf::detail::ReadOptionalField("capsule", json, out_value.capsule);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("sphere", json, out_value.sphere);
+  VRMC::ReadOptionalField("capsule", json, out_value.capsule);
 }
 inline void from_json(nlohmann::json const &json,
                       ColliderShape::Sphere &out_value) {
-  fx::gltf::detail::ReadOptionalField("offset", json, out_value.offset);
-  fx::gltf::detail::ReadOptionalField("radius", json, out_value.radius);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("offset", json, out_value.offset);
+  VRMC::ReadOptionalField("radius", json, out_value.radius);
 }
 inline void from_json(nlohmann::json const &json,
                       ColliderShape::Capsule &out_value) {
-  fx::gltf::detail::ReadOptionalField("offset", json, out_value.offset);
-  fx::gltf::detail::ReadOptionalField("radius", json, out_value.radius);
-  fx::gltf::detail::ReadOptionalField("tail", json, out_value.tail);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("offset", json, out_value.offset);
+  VRMC::ReadOptionalField("radius", json, out_value.radius);
+  VRMC::ReadOptionalField("tail", json, out_value.tail);
 }
 inline void from_json(nlohmann::json const &json,
                       MaterialColorBind &out_value) {
-  fx::gltf::detail::ReadRequiredField("material", json, out_value.material);
-  fx::gltf::detail::ReadRequiredField("type", json, out_value.type);
-  fx::gltf::detail::ReadRequiredField("targetValue", json,
-                                      out_value.targetValue);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadRequiredField("material", json, out_value.material);
+  VRMC::ReadRequiredField("type", json, out_value.type);
+  VRMC::ReadRequiredField("targetValue", json, out_value.targetValue);
 }
 inline void from_json(nlohmann::json const &json, MorphTargetBind &out_value) {
-  fx::gltf::detail::ReadRequiredField("node", json, out_value.node);
-  fx::gltf::detail::ReadRequiredField("index", json, out_value.index);
-  fx::gltf::detail::ReadRequiredField("weight", json, out_value.weight);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadRequiredField("node", json, out_value.node);
+  VRMC::ReadRequiredField("index", json, out_value.index);
+  VRMC::ReadRequiredField("weight", json, out_value.weight);
 }
 inline void from_json(nlohmann::json const &json,
                       TextureTransformBind &out_value) {
-  fx::gltf::detail::ReadRequiredField("material", json, out_value.material);
-  fx::gltf::detail::ReadOptionalField("scale", json, out_value.scale);
-  fx::gltf::detail::ReadOptionalField("offset", json, out_value.offset);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadRequiredField("material", json, out_value.material);
+  VRMC::ReadOptionalField("scale", json, out_value.scale);
+  VRMC::ReadOptionalField("offset", json, out_value.offset);
 }
 inline void from_json(nlohmann::json const &json, MeshAnnotation &out_value) {
-  fx::gltf::detail::ReadRequiredField("node", json, out_value.node);
-  fx::gltf::detail::ReadRequiredField("type", json, out_value.type);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadRequiredField("node", json, out_value.node);
+  VRMC::ReadRequiredField("type", json, out_value.type);
 }
 inline void from_json(nlohmann::json const &json, HumanBone &out_value) {
-  fx::gltf::detail::ReadRequiredField("node", json, out_value.node);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadRequiredField("node", json, out_value.node);
 }
 inline void from_json(nlohmann::json const &json, LookAtRangeMap &out_value) {
-  fx::gltf::detail::ReadOptionalField("inputMaxValue", json,
-                                      out_value.inputMaxValue);
-  fx::gltf::detail::ReadOptionalField("outputScale", json,
-                                      out_value.outputScale);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("inputMaxValue", json, out_value.inputMaxValue);
+  VRMC::ReadOptionalField("outputScale", json, out_value.outputScale);
 }
 inline void from_json(nlohmann::json const &json, Meta &out_value) {
-  fx::gltf::detail::ReadRequiredField("name", json, out_value.name);
-  fx::gltf::detail::ReadOptionalField("version", json, out_value.version);
-  fx::gltf::detail::ReadRequiredField("authors", json, out_value.authors);
-  fx::gltf::detail::ReadOptionalField("copyrightInformation", json,
-                                      out_value.copyrightInformation);
-  fx::gltf::detail::ReadOptionalField("contactInformation", json,
-                                      out_value.contactInformation);
-  fx::gltf::detail::ReadOptionalField("references", json, out_value.references);
-  fx::gltf::detail::ReadOptionalField("thirdPartyLicenses", json,
-                                      out_value.thirdPartyLicenses);
-  fx::gltf::detail::ReadOptionalField("thumbnailImage", json,
-                                      out_value.thumbnailImage);
-  fx::gltf::detail::ReadRequiredField("licenseUrl", json, out_value.licenseUrl);
-  fx::gltf::detail::ReadOptionalField("avatarPermission", json,
-                                      out_value.avatarPermission);
-  fx::gltf::detail::ReadOptionalField("allowExcessivelyViolentUsage", json,
-                                      out_value.allowExcessivelyViolentUsage);
-  fx::gltf::detail::ReadOptionalField("allowExcessivelySexualUsage", json,
-                                      out_value.allowExcessivelySexualUsage);
-  fx::gltf::detail::ReadOptionalField("commercialUsage", json,
-                                      out_value.commercialUsage);
-  fx::gltf::detail::ReadOptionalField("allowPoliticalOrReligiousUsage", json,
-                                      out_value.allowPoliticalOrReligiousUsage);
-  fx::gltf::detail::ReadOptionalField("allowAntisocialOrHateUsage", json,
-                                      out_value.allowAntisocialOrHateUsage);
-  fx::gltf::detail::ReadOptionalField("creditNotation", json,
-                                      out_value.creditNotation);
-  fx::gltf::detail::ReadOptionalField("allowRedistribution", json,
-                                      out_value.allowRedistribution);
-  fx::gltf::detail::ReadOptionalField("modification", json,
-                                      out_value.modification);
-  fx::gltf::detail::ReadOptionalField("otherLicenseUrl", json,
-                                      out_value.otherLicenseUrl);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadRequiredField("name", json, out_value.name);
+  VRMC::ReadOptionalField("version", json, out_value.version);
+  VRMC::ReadRequiredField("authors", json, out_value.authors);
+  VRMC::ReadOptionalField("copyrightInformation", json,
+                          out_value.copyrightInformation);
+  VRMC::ReadOptionalField("contactInformation", json,
+                          out_value.contactInformation);
+  VRMC::ReadOptionalField("references", json, out_value.references);
+  VRMC::ReadOptionalField("thirdPartyLicenses", json,
+                          out_value.thirdPartyLicenses);
+  VRMC::ReadOptionalField("thumbnailImage", json, out_value.thumbnailImage);
+  VRMC::ReadRequiredField("licenseUrl", json, out_value.licenseUrl);
+  VRMC::ReadOptionalField("avatarPermission", json, out_value.avatarPermission);
+  VRMC::ReadOptionalField("allowExcessivelyViolentUsage", json,
+                          out_value.allowExcessivelyViolentUsage);
+  VRMC::ReadOptionalField("allowExcessivelySexualUsage", json,
+                          out_value.allowExcessivelySexualUsage);
+  VRMC::ReadOptionalField("commercialUsage", json, out_value.commercialUsage);
+  VRMC::ReadOptionalField("allowPoliticalOrReligiousUsage", json,
+                          out_value.allowPoliticalOrReligiousUsage);
+  VRMC::ReadOptionalField("allowAntisocialOrHateUsage", json,
+                          out_value.allowAntisocialOrHateUsage);
+  VRMC::ReadOptionalField("creditNotation", json, out_value.creditNotation);
+  VRMC::ReadOptionalField("allowRedistribution", json,
+                          out_value.allowRedistribution);
+  VRMC::ReadOptionalField("modification", json, out_value.modification);
+  VRMC::ReadOptionalField("otherLicenseUrl", json, out_value.otherLicenseUrl);
 }
 inline void from_json(nlohmann::json const &json, AimConstraint &out_value) {
-  fx::gltf::detail::ReadRequiredField("source", json, out_value.source);
-  fx::gltf::detail::ReadOptionalField("sourceSpace", json,
-                                      out_value.sourceSpace);
-  fx::gltf::detail::ReadOptionalField("destinationSpace", json,
-                                      out_value.destinationSpace);
-  fx::gltf::detail::ReadOptionalField("aimVector", json, out_value.aimVector);
-  fx::gltf::detail::ReadOptionalField("upVector", json, out_value.upVector);
-  fx::gltf::detail::ReadOptionalField("freezeAxes", json, out_value.freezeAxes);
-  fx::gltf::detail::ReadOptionalField("weight", json, out_value.weight);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadRequiredField("source", json, out_value.source);
+  VRMC::ReadOptionalField("sourceSpace", json, out_value.sourceSpace);
+  VRMC::ReadOptionalField("destinationSpace", json, out_value.destinationSpace);
+  VRMC::ReadOptionalField("aimVector", json, out_value.aimVector);
+  VRMC::ReadOptionalField("upVector", json, out_value.upVector);
+  VRMC::ReadOptionalField("freezeAxes", json, out_value.freezeAxes);
+  VRMC::ReadOptionalField("weight", json, out_value.weight);
 }
 inline void from_json(nlohmann::json const &json,
                       PositionConstraint &out_value) {
-  fx::gltf::detail::ReadRequiredField("source", json, out_value.source);
-  fx::gltf::detail::ReadOptionalField("sourceSpace", json,
-                                      out_value.sourceSpace);
-  fx::gltf::detail::ReadOptionalField("destinationSpace", json,
-                                      out_value.destinationSpace);
-  fx::gltf::detail::ReadOptionalField("freezeAxes", json, out_value.freezeAxes);
-  fx::gltf::detail::ReadOptionalField("weight", json, out_value.weight);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadRequiredField("source", json, out_value.source);
+  VRMC::ReadOptionalField("sourceSpace", json, out_value.sourceSpace);
+  VRMC::ReadOptionalField("destinationSpace", json, out_value.destinationSpace);
+  VRMC::ReadOptionalField("freezeAxes", json, out_value.freezeAxes);
+  VRMC::ReadOptionalField("weight", json, out_value.weight);
 }
 inline void from_json(nlohmann::json const &json,
                       RotationConstraint &out_value) {
-  fx::gltf::detail::ReadRequiredField("source", json, out_value.source);
-  fx::gltf::detail::ReadOptionalField("sourceSpace", json,
-                                      out_value.sourceSpace);
-  fx::gltf::detail::ReadOptionalField("destinationSpace", json,
-                                      out_value.destinationSpace);
-  fx::gltf::detail::ReadOptionalField("freezeAxes", json, out_value.freezeAxes);
-  fx::gltf::detail::ReadOptionalField("weight", json, out_value.weight);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadRequiredField("source", json, out_value.source);
+  VRMC::ReadOptionalField("sourceSpace", json, out_value.sourceSpace);
+  VRMC::ReadOptionalField("destinationSpace", json, out_value.destinationSpace);
+  VRMC::ReadOptionalField("freezeAxes", json, out_value.freezeAxes);
+  VRMC::ReadOptionalField("weight", json, out_value.weight);
 }
 inline void from_json(nlohmann::json const &json, Collider &out_value) {
-  fx::gltf::detail::ReadRequiredField("node", json, out_value.node);
-  fx::gltf::detail::ReadRequiredField("shape", json, out_value.shape);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadRequiredField("node", json, out_value.node);
+  VRMC::ReadRequiredField("shape", json, out_value.shape);
 }
 inline void from_json(nlohmann::json const &json, Spring &out_value) {
-  fx::gltf::detail::ReadOptionalField("name", json, out_value.name);
-  fx::gltf::detail::ReadRequiredField("joints", json, out_value.joints);
-  fx::gltf::detail::ReadOptionalField("colliderGroups", json,
-                                      out_value.colliderGroups);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("name", json, out_value.name);
+  VRMC::ReadRequiredField("joints", json, out_value.joints);
+  VRMC::ReadOptionalField("colliderGroups", json, out_value.colliderGroups);
 }
 inline void from_json(nlohmann::json const &json, HumanBones &out_value) {
-  fx::gltf::detail::ReadRequiredField("hips", json, out_value.hips);
-  fx::gltf::detail::ReadRequiredField("spine", json, out_value.spine);
-  fx::gltf::detail::ReadOptionalField("chest", json, out_value.chest);
-  fx::gltf::detail::ReadOptionalField("upperChest", json, out_value.upperChest);
-  fx::gltf::detail::ReadOptionalField("neck", json, out_value.neck);
-  fx::gltf::detail::ReadRequiredField("head", json, out_value.head);
-  fx::gltf::detail::ReadOptionalField("leftEye", json, out_value.leftEye);
-  fx::gltf::detail::ReadOptionalField("rightEye", json, out_value.rightEye);
-  fx::gltf::detail::ReadOptionalField("jaw", json, out_value.jaw);
-  fx::gltf::detail::ReadRequiredField("leftUpperLeg", json,
-                                      out_value.leftUpperLeg);
-  fx::gltf::detail::ReadRequiredField("leftLowerLeg", json,
-                                      out_value.leftLowerLeg);
-  fx::gltf::detail::ReadRequiredField("leftFoot", json, out_value.leftFoot);
-  fx::gltf::detail::ReadOptionalField("leftToes", json, out_value.leftToes);
-  fx::gltf::detail::ReadRequiredField("rightUpperLeg", json,
-                                      out_value.rightUpperLeg);
-  fx::gltf::detail::ReadRequiredField("rightLowerLeg", json,
-                                      out_value.rightLowerLeg);
-  fx::gltf::detail::ReadRequiredField("rightFoot", json, out_value.rightFoot);
-  fx::gltf::detail::ReadOptionalField("rightToes", json, out_value.rightToes);
-  fx::gltf::detail::ReadOptionalField("leftShoulder", json,
-                                      out_value.leftShoulder);
-  fx::gltf::detail::ReadRequiredField("leftUpperArm", json,
-                                      out_value.leftUpperArm);
-  fx::gltf::detail::ReadRequiredField("leftLowerArm", json,
-                                      out_value.leftLowerArm);
-  fx::gltf::detail::ReadRequiredField("leftHand", json, out_value.leftHand);
-  fx::gltf::detail::ReadOptionalField("rightShoulder", json,
-                                      out_value.rightShoulder);
-  fx::gltf::detail::ReadRequiredField("rightUpperArm", json,
-                                      out_value.rightUpperArm);
-  fx::gltf::detail::ReadRequiredField("rightLowerArm", json,
-                                      out_value.rightLowerArm);
-  fx::gltf::detail::ReadRequiredField("rightHand", json, out_value.rightHand);
-  fx::gltf::detail::ReadOptionalField("leftThumbProximal", json,
-                                      out_value.leftThumbProximal);
-  fx::gltf::detail::ReadOptionalField("leftThumbIntermediate", json,
-                                      out_value.leftThumbIntermediate);
-  fx::gltf::detail::ReadOptionalField("leftThumbDistal", json,
-                                      out_value.leftThumbDistal);
-  fx::gltf::detail::ReadOptionalField("leftIndexProximal", json,
-                                      out_value.leftIndexProximal);
-  fx::gltf::detail::ReadOptionalField("leftIndexIntermediate", json,
-                                      out_value.leftIndexIntermediate);
-  fx::gltf::detail::ReadOptionalField("leftIndexDistal", json,
-                                      out_value.leftIndexDistal);
-  fx::gltf::detail::ReadOptionalField("leftMiddleProximal", json,
-                                      out_value.leftMiddleProximal);
-  fx::gltf::detail::ReadOptionalField("leftMiddleIntermediate", json,
-                                      out_value.leftMiddleIntermediate);
-  fx::gltf::detail::ReadOptionalField("leftMiddleDistal", json,
-                                      out_value.leftMiddleDistal);
-  fx::gltf::detail::ReadOptionalField("leftRingProximal", json,
-                                      out_value.leftRingProximal);
-  fx::gltf::detail::ReadOptionalField("leftRingIntermediate", json,
-                                      out_value.leftRingIntermediate);
-  fx::gltf::detail::ReadOptionalField("leftRingDistal", json,
-                                      out_value.leftRingDistal);
-  fx::gltf::detail::ReadOptionalField("leftLittleProximal", json,
-                                      out_value.leftLittleProximal);
-  fx::gltf::detail::ReadOptionalField("leftLittleIntermediate", json,
-                                      out_value.leftLittleIntermediate);
-  fx::gltf::detail::ReadOptionalField("leftLittleDistal", json,
-                                      out_value.leftLittleDistal);
-  fx::gltf::detail::ReadOptionalField("rightThumbProximal", json,
-                                      out_value.rightThumbProximal);
-  fx::gltf::detail::ReadOptionalField("rightThumbIntermediate", json,
-                                      out_value.rightThumbIntermediate);
-  fx::gltf::detail::ReadOptionalField("rightThumbDistal", json,
-                                      out_value.rightThumbDistal);
-  fx::gltf::detail::ReadOptionalField("rightIndexProximal", json,
-                                      out_value.rightIndexProximal);
-  fx::gltf::detail::ReadOptionalField("rightIndexIntermediate", json,
-                                      out_value.rightIndexIntermediate);
-  fx::gltf::detail::ReadOptionalField("rightIndexDistal", json,
-                                      out_value.rightIndexDistal);
-  fx::gltf::detail::ReadOptionalField("rightMiddleProximal", json,
-                                      out_value.rightMiddleProximal);
-  fx::gltf::detail::ReadOptionalField("rightMiddleIntermediate", json,
-                                      out_value.rightMiddleIntermediate);
-  fx::gltf::detail::ReadOptionalField("rightMiddleDistal", json,
-                                      out_value.rightMiddleDistal);
-  fx::gltf::detail::ReadOptionalField("rightRingProximal", json,
-                                      out_value.rightRingProximal);
-  fx::gltf::detail::ReadOptionalField("rightRingIntermediate", json,
-                                      out_value.rightRingIntermediate);
-  fx::gltf::detail::ReadOptionalField("rightRingDistal", json,
-                                      out_value.rightRingDistal);
-  fx::gltf::detail::ReadOptionalField("rightLittleProximal", json,
-                                      out_value.rightLittleProximal);
-  fx::gltf::detail::ReadOptionalField("rightLittleIntermediate", json,
-                                      out_value.rightLittleIntermediate);
-  fx::gltf::detail::ReadOptionalField("rightLittleDistal", json,
-                                      out_value.rightLittleDistal);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadRequiredField("hips", json, out_value.hips);
+  VRMC::ReadRequiredField("spine", json, out_value.spine);
+  VRMC::ReadOptionalField("chest", json, out_value.chest);
+  VRMC::ReadOptionalField("upperChest", json, out_value.upperChest);
+  VRMC::ReadOptionalField("neck", json, out_value.neck);
+  VRMC::ReadRequiredField("head", json, out_value.head);
+  VRMC::ReadOptionalField("leftEye", json, out_value.leftEye);
+  VRMC::ReadOptionalField("rightEye", json, out_value.rightEye);
+  VRMC::ReadOptionalField("jaw", json, out_value.jaw);
+  VRMC::ReadRequiredField("leftUpperLeg", json, out_value.leftUpperLeg);
+  VRMC::ReadRequiredField("leftLowerLeg", json, out_value.leftLowerLeg);
+  VRMC::ReadRequiredField("leftFoot", json, out_value.leftFoot);
+  VRMC::ReadOptionalField("leftToes", json, out_value.leftToes);
+  VRMC::ReadRequiredField("rightUpperLeg", json, out_value.rightUpperLeg);
+  VRMC::ReadRequiredField("rightLowerLeg", json, out_value.rightLowerLeg);
+  VRMC::ReadRequiredField("rightFoot", json, out_value.rightFoot);
+  VRMC::ReadOptionalField("rightToes", json, out_value.rightToes);
+  VRMC::ReadOptionalField("leftShoulder", json, out_value.leftShoulder);
+  VRMC::ReadRequiredField("leftUpperArm", json, out_value.leftUpperArm);
+  VRMC::ReadRequiredField("leftLowerArm", json, out_value.leftLowerArm);
+  VRMC::ReadRequiredField("leftHand", json, out_value.leftHand);
+  VRMC::ReadOptionalField("rightShoulder", json, out_value.rightShoulder);
+  VRMC::ReadRequiredField("rightUpperArm", json, out_value.rightUpperArm);
+  VRMC::ReadRequiredField("rightLowerArm", json, out_value.rightLowerArm);
+  VRMC::ReadRequiredField("rightHand", json, out_value.rightHand);
+  VRMC::ReadOptionalField("leftThumbProximal", json,
+                          out_value.leftThumbProximal);
+  VRMC::ReadOptionalField("leftThumbIntermediate", json,
+                          out_value.leftThumbIntermediate);
+  VRMC::ReadOptionalField("leftThumbDistal", json, out_value.leftThumbDistal);
+  VRMC::ReadOptionalField("leftIndexProximal", json,
+                          out_value.leftIndexProximal);
+  VRMC::ReadOptionalField("leftIndexIntermediate", json,
+                          out_value.leftIndexIntermediate);
+  VRMC::ReadOptionalField("leftIndexDistal", json, out_value.leftIndexDistal);
+  VRMC::ReadOptionalField("leftMiddleProximal", json,
+                          out_value.leftMiddleProximal);
+  VRMC::ReadOptionalField("leftMiddleIntermediate", json,
+                          out_value.leftMiddleIntermediate);
+  VRMC::ReadOptionalField("leftMiddleDistal", json, out_value.leftMiddleDistal);
+  VRMC::ReadOptionalField("leftRingProximal", json, out_value.leftRingProximal);
+  VRMC::ReadOptionalField("leftRingIntermediate", json,
+                          out_value.leftRingIntermediate);
+  VRMC::ReadOptionalField("leftRingDistal", json, out_value.leftRingDistal);
+  VRMC::ReadOptionalField("leftLittleProximal", json,
+                          out_value.leftLittleProximal);
+  VRMC::ReadOptionalField("leftLittleIntermediate", json,
+                          out_value.leftLittleIntermediate);
+  VRMC::ReadOptionalField("leftLittleDistal", json, out_value.leftLittleDistal);
+  VRMC::ReadOptionalField("rightThumbProximal", json,
+                          out_value.rightThumbProximal);
+  VRMC::ReadOptionalField("rightThumbIntermediate", json,
+                          out_value.rightThumbIntermediate);
+  VRMC::ReadOptionalField("rightThumbDistal", json, out_value.rightThumbDistal);
+  VRMC::ReadOptionalField("rightIndexProximal", json,
+                          out_value.rightIndexProximal);
+  VRMC::ReadOptionalField("rightIndexIntermediate", json,
+                          out_value.rightIndexIntermediate);
+  VRMC::ReadOptionalField("rightIndexDistal", json, out_value.rightIndexDistal);
+  VRMC::ReadOptionalField("rightMiddleProximal", json,
+                          out_value.rightMiddleProximal);
+  VRMC::ReadOptionalField("rightMiddleIntermediate", json,
+                          out_value.rightMiddleIntermediate);
+  VRMC::ReadOptionalField("rightMiddleDistal", json,
+                          out_value.rightMiddleDistal);
+  VRMC::ReadOptionalField("rightRingProximal", json,
+                          out_value.rightRingProximal);
+  VRMC::ReadOptionalField("rightRingIntermediate", json,
+                          out_value.rightRingIntermediate);
+  VRMC::ReadOptionalField("rightRingDistal", json, out_value.rightRingDistal);
+  VRMC::ReadOptionalField("rightLittleProximal", json,
+                          out_value.rightLittleProximal);
+  VRMC::ReadOptionalField("rightLittleIntermediate", json,
+                          out_value.rightLittleIntermediate);
+  VRMC::ReadOptionalField("rightLittleDistal", json,
+                          out_value.rightLittleDistal);
 }
 inline void from_json(nlohmann::json const &json, Constraint &out_value) {
-  fx::gltf::detail::ReadOptionalField("position", json, out_value.position);
-  fx::gltf::detail::ReadOptionalField("rotation", json, out_value.rotation);
-  fx::gltf::detail::ReadOptionalField("aim", json, out_value.aim);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("position", json, out_value.position);
+  VRMC::ReadOptionalField("rotation", json, out_value.rotation);
+  VRMC::ReadOptionalField("aim", json, out_value.aim);
 }
 inline void from_json(nlohmann::json const &json, SpringBone &out_value) {
-  fx::gltf::detail::ReadOptionalField("specVersion", json,
-                                      out_value.specVersion);
-  fx::gltf::detail::ReadOptionalField("colliders", json, out_value.colliders);
-  fx::gltf::detail::ReadOptionalField("colliderGroups", json,
-                                      out_value.colliderGroups);
-  fx::gltf::detail::ReadOptionalField("springs", json, out_value.springs);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("specVersion", json, out_value.specVersion);
+  VRMC::ReadOptionalField("colliders", json, out_value.colliders);
+  VRMC::ReadOptionalField("colliderGroups", json, out_value.colliderGroups);
+  VRMC::ReadOptionalField("springs", json, out_value.springs);
 }
 inline void from_json(nlohmann::json const &json, Expression &out_value) {
-  fx::gltf::detail::ReadOptionalField("morphTargetBinds", json,
-                                      out_value.morphTargetBinds);
-  fx::gltf::detail::ReadOptionalField("materialColorBinds", json,
-                                      out_value.materialColorBinds);
-  fx::gltf::detail::ReadOptionalField("textureTransformBinds", json,
-                                      out_value.textureTransformBinds);
-  fx::gltf::detail::ReadOptionalField("isBinary", json, out_value.isBinary);
-  fx::gltf::detail::ReadOptionalField("overrideBlink", json,
-                                      out_value.overrideBlink);
-  fx::gltf::detail::ReadOptionalField("overrideLookAt", json,
-                                      out_value.overrideLookAt);
-  fx::gltf::detail::ReadOptionalField("overrideMouth", json,
-                                      out_value.overrideMouth);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("morphTargetBinds", json, out_value.morphTargetBinds);
+  VRMC::ReadOptionalField("materialColorBinds", json,
+                          out_value.materialColorBinds);
+  VRMC::ReadOptionalField("textureTransformBinds", json,
+                          out_value.textureTransformBinds);
+  VRMC::ReadOptionalField("isBinary", json, out_value.isBinary);
+  VRMC::ReadOptionalField("overrideBlink", json, out_value.overrideBlink);
+  VRMC::ReadOptionalField("overrideLookAt", json, out_value.overrideLookAt);
+  VRMC::ReadOptionalField("overrideMouth", json, out_value.overrideMouth);
 }
 inline void from_json(nlohmann::json const &json, Expressions &out_value) {
-  fx::gltf::detail::ReadOptionalField("preset", json, out_value.preset);
-  fx::gltf::detail::ReadOptionalField("custom", json, out_value.custom);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("preset", json, out_value.preset);
+  VRMC::ReadOptionalField("custom", json, out_value.custom);
 }
 inline void from_json(nlohmann::json const &json,
                       Expressions::Preset &out_value) {
-  fx::gltf::detail::ReadOptionalField("happy", json, out_value.happy);
-  fx::gltf::detail::ReadOptionalField("angry", json, out_value.angry);
-  fx::gltf::detail::ReadOptionalField("sad", json, out_value.sad);
-  fx::gltf::detail::ReadOptionalField("relaxed", json, out_value.relaxed);
-  fx::gltf::detail::ReadOptionalField("surprised", json, out_value.surprised);
-  fx::gltf::detail::ReadOptionalField("aa", json, out_value.aa);
-  fx::gltf::detail::ReadOptionalField("ih", json, out_value.ih);
-  fx::gltf::detail::ReadOptionalField("ou", json, out_value.ou);
-  fx::gltf::detail::ReadOptionalField("ee", json, out_value.ee);
-  fx::gltf::detail::ReadOptionalField("oh", json, out_value.oh);
-  fx::gltf::detail::ReadOptionalField("blink", json, out_value.blink);
-  fx::gltf::detail::ReadOptionalField("blinkLeft", json, out_value.blinkLeft);
-  fx::gltf::detail::ReadOptionalField("blinkRight", json, out_value.blinkRight);
-  fx::gltf::detail::ReadOptionalField("lookUp", json, out_value.lookUp);
-  fx::gltf::detail::ReadOptionalField("lookDown", json, out_value.lookDown);
-  fx::gltf::detail::ReadOptionalField("lookLeft", json, out_value.lookLeft);
-  fx::gltf::detail::ReadOptionalField("lookRight", json, out_value.lookRight);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("happy", json, out_value.happy);
+  VRMC::ReadOptionalField("angry", json, out_value.angry);
+  VRMC::ReadOptionalField("sad", json, out_value.sad);
+  VRMC::ReadOptionalField("relaxed", json, out_value.relaxed);
+  VRMC::ReadOptionalField("surprised", json, out_value.surprised);
+  VRMC::ReadOptionalField("aa", json, out_value.aa);
+  VRMC::ReadOptionalField("ih", json, out_value.ih);
+  VRMC::ReadOptionalField("ou", json, out_value.ou);
+  VRMC::ReadOptionalField("ee", json, out_value.ee);
+  VRMC::ReadOptionalField("oh", json, out_value.oh);
+  VRMC::ReadOptionalField("blink", json, out_value.blink);
+  VRMC::ReadOptionalField("blinkLeft", json, out_value.blinkLeft);
+  VRMC::ReadOptionalField("blinkRight", json, out_value.blinkRight);
+  VRMC::ReadOptionalField("lookUp", json, out_value.lookUp);
+  VRMC::ReadOptionalField("lookDown", json, out_value.lookDown);
+  VRMC::ReadOptionalField("lookLeft", json, out_value.lookLeft);
+  VRMC::ReadOptionalField("lookRight", json, out_value.lookRight);
 }
 inline void from_json(nlohmann::json const &json, FirstPerson &out_value) {
-  fx::gltf::detail::ReadOptionalField("meshAnnotations", json,
-                                      out_value.meshAnnotations);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("meshAnnotations", json, out_value.meshAnnotations);
 }
 inline void from_json(nlohmann::json const &json, Humanoid &out_value) {
-  fx::gltf::detail::ReadRequiredField("humanBones", json, out_value.humanBones);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadRequiredField("humanBones", json, out_value.humanBones);
 }
 inline void from_json(nlohmann::json const &json, LookAt &out_value) {
-  fx::gltf::detail::ReadOptionalField("offsetFromHeadBone", json,
-                                      out_value.offsetFromHeadBone);
-  fx::gltf::detail::ReadOptionalField("type", json, out_value.type);
-  fx::gltf::detail::ReadOptionalField("rangeMapHorizontalInner", json,
-                                      out_value.rangeMapHorizontalInner);
-  fx::gltf::detail::ReadOptionalField("rangeMapHorizontalOuter", json,
-                                      out_value.rangeMapHorizontalOuter);
-  fx::gltf::detail::ReadOptionalField("rangeMapVerticalDown", json,
-                                      out_value.rangeMapVerticalDown);
-  fx::gltf::detail::ReadOptionalField("rangeMapVerticalUp", json,
-                                      out_value.rangeMapVerticalUp);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("offsetFromHeadBone", json,
+                          out_value.offsetFromHeadBone);
+  VRMC::ReadOptionalField("type", json, out_value.type);
+  VRMC::ReadOptionalField("rangeMapHorizontalInner", json,
+                          out_value.rangeMapHorizontalInner);
+  VRMC::ReadOptionalField("rangeMapHorizontalOuter", json,
+                          out_value.rangeMapHorizontalOuter);
+  VRMC::ReadOptionalField("rangeMapVerticalDown", json,
+                          out_value.rangeMapVerticalDown);
+  VRMC::ReadOptionalField("rangeMapVerticalUp", json,
+                          out_value.rangeMapVerticalUp);
 }
 inline void from_json(nlohmann::json const &json,
                       MaterialsHdrEmissiveMultiplier &out_value) {
-  fx::gltf::detail::ReadRequiredField("emissiveMultiplier", json,
-                                      out_value.emissiveMultiplier);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadRequiredField("emissiveMultiplier", json,
+                          out_value.emissiveMultiplier);
 }
 inline void from_json(nlohmann::json const &json, MaterialsMtoon &out_value) {
-  fx::gltf::detail::ReadOptionalField("specVersion", json,
-                                      out_value.specVersion);
-  fx::gltf::detail::ReadOptionalField("transparentWithZWrite", json,
-                                      out_value.transparentWithZWrite);
-  fx::gltf::detail::ReadOptionalField("renderQueueOffsetNumber", json,
-                                      out_value.renderQueueOffsetNumber);
-  fx::gltf::detail::ReadOptionalField("shadeColorFactor", json,
-                                      out_value.shadeColorFactor);
-  fx::gltf::detail::ReadOptionalField("shadeMultiplyTexture", json,
-                                      out_value.shadeMultiplyTexture);
-  fx::gltf::detail::ReadOptionalField("shadingShiftFactor", json,
-                                      out_value.shadingShiftFactor);
-  fx::gltf::detail::ReadOptionalField("shadingShiftTexture", json,
-                                      out_value.shadingShiftTexture);
-  fx::gltf::detail::ReadOptionalField("shadingToonyFactor", json,
-                                      out_value.shadingToonyFactor);
-  fx::gltf::detail::ReadOptionalField("giEqualizationFactor", json,
-                                      out_value.giEqualizationFactor);
-  fx::gltf::detail::ReadOptionalField("matcapFactor", json,
-                                      out_value.matcapFactor);
-  fx::gltf::detail::ReadOptionalField("matcapTexture", json,
-                                      out_value.matcapTexture);
-  fx::gltf::detail::ReadOptionalField("parametricRimColorFactor", json,
-                                      out_value.parametricRimColorFactor);
-  fx::gltf::detail::ReadOptionalField("rimMultiplyTexture", json,
-                                      out_value.rimMultiplyTexture);
-  fx::gltf::detail::ReadOptionalField("rimLightingMixFactor", json,
-                                      out_value.rimLightingMixFactor);
-  fx::gltf::detail::ReadOptionalField(
-      "parametricRimFresnelPowerFactor", json,
-      out_value.parametricRimFresnelPowerFactor);
-  fx::gltf::detail::ReadOptionalField("parametricRimLiftFactor", json,
-                                      out_value.parametricRimLiftFactor);
-  fx::gltf::detail::ReadOptionalField("outlineWidthMode", json,
-                                      out_value.outlineWidthMode);
-  fx::gltf::detail::ReadOptionalField("outlineWidthFactor", json,
-                                      out_value.outlineWidthFactor);
-  fx::gltf::detail::ReadOptionalField("outlineWidthMultiplyTexture", json,
-                                      out_value.outlineWidthMultiplyTexture);
-  fx::gltf::detail::ReadOptionalField("outlineColorFactor", json,
-                                      out_value.outlineColorFactor);
-  fx::gltf::detail::ReadOptionalField("outlineLightingMixFactor", json,
-                                      out_value.outlineLightingMixFactor);
-  fx::gltf::detail::ReadOptionalField("uvAnimationMaskTexture", json,
-                                      out_value.uvAnimationMaskTexture);
-  fx::gltf::detail::ReadOptionalField("uvAnimationScrollXSpeedFactor", json,
-                                      out_value.uvAnimationScrollXSpeedFactor);
-  fx::gltf::detail::ReadOptionalField("uvAnimationScrollYSpeedFactor", json,
-                                      out_value.uvAnimationScrollYSpeedFactor);
-  fx::gltf::detail::ReadOptionalField("uvAnimationRotationSpeedFactor", json,
-                                      out_value.uvAnimationRotationSpeedFactor);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("specVersion", json, out_value.specVersion);
+  VRMC::ReadOptionalField("transparentWithZWrite", json,
+                          out_value.transparentWithZWrite);
+  VRMC::ReadOptionalField("renderQueueOffsetNumber", json,
+                          out_value.renderQueueOffsetNumber);
+  VRMC::ReadOptionalField("shadeColorFactor", json, out_value.shadeColorFactor);
+  VRMC::ReadOptionalField("shadeMultiplyTexture", json,
+                          out_value.shadeMultiplyTexture);
+  VRMC::ReadOptionalField("shadingShiftFactor", json,
+                          out_value.shadingShiftFactor);
+  VRMC::ReadOptionalField("shadingShiftTexture", json,
+                          out_value.shadingShiftTexture);
+  VRMC::ReadOptionalField("shadingToonyFactor", json,
+                          out_value.shadingToonyFactor);
+  VRMC::ReadOptionalField("giEqualizationFactor", json,
+                          out_value.giEqualizationFactor);
+  VRMC::ReadOptionalField("matcapFactor", json, out_value.matcapFactor);
+  VRMC::ReadOptionalField("matcapTexture", json, out_value.matcapTexture);
+  VRMC::ReadOptionalField("parametricRimColorFactor", json,
+                          out_value.parametricRimColorFactor);
+  VRMC::ReadOptionalField("rimMultiplyTexture", json,
+                          out_value.rimMultiplyTexture);
+  VRMC::ReadOptionalField("rimLightingMixFactor", json,
+                          out_value.rimLightingMixFactor);
+  VRMC::ReadOptionalField("parametricRimFresnelPowerFactor", json,
+                          out_value.parametricRimFresnelPowerFactor);
+  VRMC::ReadOptionalField("parametricRimLiftFactor", json,
+                          out_value.parametricRimLiftFactor);
+  VRMC::ReadOptionalField("outlineWidthMode", json, out_value.outlineWidthMode);
+  VRMC::ReadOptionalField("outlineWidthFactor", json,
+                          out_value.outlineWidthFactor);
+  VRMC::ReadOptionalField("outlineWidthMultiplyTexture", json,
+                          out_value.outlineWidthMultiplyTexture);
+  VRMC::ReadOptionalField("outlineColorFactor", json,
+                          out_value.outlineColorFactor);
+  VRMC::ReadOptionalField("outlineLightingMixFactor", json,
+                          out_value.outlineLightingMixFactor);
+  VRMC::ReadOptionalField("uvAnimationMaskTexture", json,
+                          out_value.uvAnimationMaskTexture);
+  VRMC::ReadOptionalField("uvAnimationScrollXSpeedFactor", json,
+                          out_value.uvAnimationScrollXSpeedFactor);
+  VRMC::ReadOptionalField("uvAnimationScrollYSpeedFactor", json,
+                          out_value.uvAnimationScrollYSpeedFactor);
+  VRMC::ReadOptionalField("uvAnimationRotationSpeedFactor", json,
+                          out_value.uvAnimationRotationSpeedFactor);
 }
 inline void from_json(nlohmann::json const &json,
                       NodeConstraintextension &out_value) {
-  fx::gltf::detail::ReadOptionalField("specVersion", json,
-                                      out_value.specVersion);
-  fx::gltf::detail::ReadOptionalField("constraint", json, out_value.constraint);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadOptionalField("specVersion", json, out_value.specVersion);
+  VRMC::ReadOptionalField("constraint", json, out_value.constraint);
 }
 inline void from_json(nlohmann::json const &json, Vrm &out_value) {
-  fx::gltf::detail::ReadRequiredField("specVersion", json,
-                                      out_value.specVersion);
-  fx::gltf::detail::ReadRequiredField("meta", json, out_value.meta);
-  fx::gltf::detail::ReadRequiredField("humanoid", json, out_value.humanoid);
-  fx::gltf::detail::ReadOptionalField("firstPerson", json,
-                                      out_value.firstPerson);
-  fx::gltf::detail::ReadOptionalField("lookAt", json, out_value.lookAt);
-  fx::gltf::detail::ReadOptionalField("expressions", json,
-                                      out_value.expressions);
-  fx::gltf::detail::ReadExtensionsAndExtras(json,
-                                            out_value.extensionsAndExtras);
+  VRMC::ReadRequiredField("specVersion", json, out_value.specVersion);
+  VRMC::ReadRequiredField("meta", json, out_value.meta);
+  VRMC::ReadRequiredField("humanoid", json, out_value.humanoid);
+  VRMC::ReadOptionalField("firstPerson", json, out_value.firstPerson);
+  VRMC::ReadOptionalField("lookAt", json, out_value.lookAt);
+  VRMC::ReadOptionalField("expressions", json, out_value.expressions);
 }
 } // namespace VRMC_VRM_1_0
 #endif

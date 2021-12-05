@@ -2,6 +2,8 @@
 #include <filesystem>
 #include <iostream>
 
+#include <fx/gltf.h>
+
 #define USE_VRMC_VRM_0_0
 #define USE_VRMC_VRM_1_0
 #include <VRMC/VRM.h>
