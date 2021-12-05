@@ -7,7 +7,11 @@ C++ header-only library for simple serialization/deserialization of [VRM](https:
 - [x] Supports both VRM 0.x and 1.0 specification
 - [x] Full serialization and deserialization capability
 
-## Usage
+### Dependencies
+* [nlohmann::json](https://github.com/nlohmann/json)
+* Any C/C++ libraries that can load JSON data from glTF binary
+
+## Usage (with fx-gltf)
 
 ### VRM 0.x
 
@@ -46,6 +50,8 @@ if (vrm.meta.avatarPermission == VRMC_VRM_1_0::Meta::AvatarPermissionType::OnlyA
 ```
 
 So these tests above are both checking against avatar usage permissions but why there's a difference between them? It is because their JSON specifications are different between 0.x and 1.0. Check out [vrm-specification](https://github.com/vrm-c/vrm-specification/tree/master/specification) for details if you're interested.
+
+For the examples with [cgltf](https://github.com/jkuhlmann/cgltf), please refer to unit tests.
 
 ## License
 

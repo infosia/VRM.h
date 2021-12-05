@@ -157,4 +157,8 @@ TEST_CASE("VRM 1.0 (cgltf)") {
     REQUIRE(vrm.meta.avatarPermission ==
             VRMC_VRM_1_0::Meta::AvatarPermissionType::OnlyAuthor);
   }
+
+  if (result == cgltf_result_success) {
+    cgltf_free(data);
+  }
 }

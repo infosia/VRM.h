@@ -17,7 +17,7 @@ namespace VRMC {
 template <typename TKey, typename TTarget>
 inline void ReadRequiredField(TKey &&key, nlohmann::json const &json,
                               TTarget &target) {
-  const nlohmann::json::const_iterator iter = json.find(key);
+  const auto iter = json.find(key);
   if (iter == json.end()) {
     std::string msg = "Required field not found : " + std::string(key);
     throw std::runtime_error(msg);
@@ -29,7 +29,7 @@ inline void ReadRequiredField(TKey &&key, nlohmann::json const &json,
 template <typename TKey, typename TTarget>
 inline void ReadOptionalField(TKey &&key, nlohmann::json const &json,
                               TTarget &target) {
-  const nlohmann::json::const_iterator iter = json.find(key);
+  const auto iter = json.find(key);
   if (iter != json.end()) {
     target = iter->get<TTarget>();
   }
