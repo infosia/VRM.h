@@ -6,8 +6,12 @@ C++ header-only library for simple serialization/deserialization of [VRM](https:
 
 - [x] Supports both VRM 0.x and 1.0 specification
 - [x] Full serialization and deserialization capability
+- [x] VRMC_springBone extension
+- [x] VRMC_node_constraint extension
+- [x] VRMC_materials_mtoon extension
+- [x] VRMC_materials_hdr_emissiveMultiplier extension
 
-### Dependencies
+## Dependencies
 * [nlohmann::json](https://github.com/nlohmann/json)
 * Any C/C++ libraries that can load JSON data from glTF binary
 
