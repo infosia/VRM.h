@@ -73,7 +73,7 @@ struct SecondaryanimationSpring {
   std::string comment;
   float stiffiness{};
   float gravityPower{};
-  Vector3 gravityDir;
+  Vector3 gravityDir{};
   float dragForce{};
   uint32_t center{};
   float hitRadius{};
@@ -84,7 +84,7 @@ struct SecondaryanimationSpring {
 struct SecondaryanimationCollidergroup {
   uint32_t node{};
   struct Collider {
-    Vector3 offset;
+    Vector3 offset{};
     float radius{};
   };
 
@@ -153,14 +153,14 @@ struct FirstpersonMeshannotation {
 
 struct Firstperson {
   uint32_t firstPersonBone{};
-  Vector3 firstPersonBoneOffset;
+  Vector3 firstPersonBoneOffset{};
   std::vector<FirstpersonMeshannotation> meshAnnotations{};
   enum class LookAtTypeName : uint8_t { Bone, BlendShape };
   LookAtTypeName lookAtTypeName;
-  FirstpersonDegreemap lookAtHorizontalInner;
-  FirstpersonDegreemap lookAtHorizontalOuter;
-  FirstpersonDegreemap lookAtVerticalDown;
-  FirstpersonDegreemap lookAtVerticalUp;
+  FirstpersonDegreemap lookAtHorizontalInner{};
+  FirstpersonDegreemap lookAtHorizontalOuter{};
+  FirstpersonDegreemap lookAtVerticalDown{};
+  FirstpersonDegreemap lookAtVerticalUp{};
 };
 
 struct HumanoidBone {
@@ -224,9 +224,9 @@ struct HumanoidBone {
   Bone bone;
   uint32_t node{};
   bool useDefaultValues{};
-  Vector3 min;
-  Vector3 max;
-  Vector3 center;
+  Vector3 min{};
+  Vector3 max{};
+  Vector3 center{};
   float axisLength{};
 };
 
@@ -291,11 +291,11 @@ struct Meta {
 struct Vrm {
   std::string exporterVersion;
   std::string specVersion;
-  Meta meta;
-  Humanoid humanoid;
-  Firstperson firstPerson;
-  Blendshape blendShapeMaster;
-  Secondaryanimation secondaryAnimation;
+  Meta meta{};
+  Humanoid humanoid{};
+  Firstperson firstPerson{};
+  Blendshape blendShapeMaster{};
+  Secondaryanimation secondaryAnimation{};
   std::vector<Material> materialProperties{};
 };
 inline void from_json(nlohmann::json const &json,
@@ -1175,14 +1175,14 @@ struct ColliderShape {
     float radius{};
   };
 
-  Sphere sphere;
+  Sphere sphere{};
   struct Capsule {
     std::vector<float> offset = {0, 0, 0};
     float radius{};
     std::vector<float> tail = {0, 0, 0};
   };
 
-  Capsule capsule;
+  Capsule capsule{};
 };
 
 struct MaterialColorBind {
@@ -1270,8 +1270,8 @@ struct Meta {
 
 struct AimConstraint {
   uint32_t source{};
-  ObjectSpace sourceSpace;
-  ObjectSpace destinationSpace;
+  ObjectSpace sourceSpace{};
+  ObjectSpace destinationSpace{};
   std::vector<float> aimVector = {0, 0, 1};
   std::vector<float> upVector = {0, 0, 1};
   std::vector<bool> freezeAxes = {true, true};
@@ -1280,23 +1280,23 @@ struct AimConstraint {
 
 struct PositionConstraint {
   uint32_t source{};
-  ObjectSpace sourceSpace;
-  ObjectSpace destinationSpace;
+  ObjectSpace sourceSpace{};
+  ObjectSpace destinationSpace{};
   std::vector<bool> freezeAxes = {true, true, true};
   float weight = 1.f;
 };
 
 struct RotationConstraint {
   uint32_t source{};
-  ObjectSpace sourceSpace;
-  ObjectSpace destinationSpace;
+  ObjectSpace sourceSpace{};
+  ObjectSpace destinationSpace{};
   std::vector<bool> freezeAxes = {true, true, true};
   float weight = 1.f;
 };
 
 struct Collider {
   uint32_t node{};
-  ColliderShape shape;
+  ColliderShape shape{};
 };
 
 struct Spring {
@@ -1306,67 +1306,67 @@ struct Spring {
 };
 
 struct HumanBones {
-  HumanBone hips;
-  HumanBone spine;
-  HumanBone chest;
-  HumanBone upperChest;
-  HumanBone neck;
-  HumanBone head;
-  HumanBone leftEye;
-  HumanBone rightEye;
-  HumanBone jaw;
-  HumanBone leftUpperLeg;
-  HumanBone leftLowerLeg;
-  HumanBone leftFoot;
-  HumanBone leftToes;
-  HumanBone rightUpperLeg;
-  HumanBone rightLowerLeg;
-  HumanBone rightFoot;
-  HumanBone rightToes;
-  HumanBone leftShoulder;
-  HumanBone leftUpperArm;
-  HumanBone leftLowerArm;
-  HumanBone leftHand;
-  HumanBone rightShoulder;
-  HumanBone rightUpperArm;
-  HumanBone rightLowerArm;
-  HumanBone rightHand;
-  HumanBone leftThumbProximal;
-  HumanBone leftThumbIntermediate;
-  HumanBone leftThumbDistal;
-  HumanBone leftIndexProximal;
-  HumanBone leftIndexIntermediate;
-  HumanBone leftIndexDistal;
-  HumanBone leftMiddleProximal;
-  HumanBone leftMiddleIntermediate;
-  HumanBone leftMiddleDistal;
-  HumanBone leftRingProximal;
-  HumanBone leftRingIntermediate;
-  HumanBone leftRingDistal;
-  HumanBone leftLittleProximal;
-  HumanBone leftLittleIntermediate;
-  HumanBone leftLittleDistal;
-  HumanBone rightThumbProximal;
-  HumanBone rightThumbIntermediate;
-  HumanBone rightThumbDistal;
-  HumanBone rightIndexProximal;
-  HumanBone rightIndexIntermediate;
-  HumanBone rightIndexDistal;
-  HumanBone rightMiddleProximal;
-  HumanBone rightMiddleIntermediate;
-  HumanBone rightMiddleDistal;
-  HumanBone rightRingProximal;
-  HumanBone rightRingIntermediate;
-  HumanBone rightRingDistal;
-  HumanBone rightLittleProximal;
-  HumanBone rightLittleIntermediate;
-  HumanBone rightLittleDistal;
+  HumanBone hips{};
+  HumanBone spine{};
+  HumanBone chest{};
+  HumanBone upperChest{};
+  HumanBone neck{};
+  HumanBone head{};
+  HumanBone leftEye{};
+  HumanBone rightEye{};
+  HumanBone jaw{};
+  HumanBone leftUpperLeg{};
+  HumanBone leftLowerLeg{};
+  HumanBone leftFoot{};
+  HumanBone leftToes{};
+  HumanBone rightUpperLeg{};
+  HumanBone rightLowerLeg{};
+  HumanBone rightFoot{};
+  HumanBone rightToes{};
+  HumanBone leftShoulder{};
+  HumanBone leftUpperArm{};
+  HumanBone leftLowerArm{};
+  HumanBone leftHand{};
+  HumanBone rightShoulder{};
+  HumanBone rightUpperArm{};
+  HumanBone rightLowerArm{};
+  HumanBone rightHand{};
+  HumanBone leftThumbProximal{};
+  HumanBone leftThumbIntermediate{};
+  HumanBone leftThumbDistal{};
+  HumanBone leftIndexProximal{};
+  HumanBone leftIndexIntermediate{};
+  HumanBone leftIndexDistal{};
+  HumanBone leftMiddleProximal{};
+  HumanBone leftMiddleIntermediate{};
+  HumanBone leftMiddleDistal{};
+  HumanBone leftRingProximal{};
+  HumanBone leftRingIntermediate{};
+  HumanBone leftRingDistal{};
+  HumanBone leftLittleProximal{};
+  HumanBone leftLittleIntermediate{};
+  HumanBone leftLittleDistal{};
+  HumanBone rightThumbProximal{};
+  HumanBone rightThumbIntermediate{};
+  HumanBone rightThumbDistal{};
+  HumanBone rightIndexProximal{};
+  HumanBone rightIndexIntermediate{};
+  HumanBone rightIndexDistal{};
+  HumanBone rightMiddleProximal{};
+  HumanBone rightMiddleIntermediate{};
+  HumanBone rightMiddleDistal{};
+  HumanBone rightRingProximal{};
+  HumanBone rightRingIntermediate{};
+  HumanBone rightRingDistal{};
+  HumanBone rightLittleProximal{};
+  HumanBone rightLittleIntermediate{};
+  HumanBone rightLittleDistal{};
 };
 
 struct Constraint {
-  PositionConstraint position;
-  RotationConstraint rotation;
-  AimConstraint aim;
+  PositionConstraint position{};
+  RotationConstraint rotation{};
+  AimConstraint aim{};
 };
 
 struct SpringBone {
@@ -1389,27 +1389,27 @@ struct Expression {
 
 struct Expressions {
   struct Preset {
-    Expression happy;
-    Expression angry;
-    Expression sad;
-    Expression relaxed;
-    Expression surprised;
-    Expression aa;
-    Expression ih;
-    Expression ou;
-    Expression ee;
-    Expression oh;
-    Expression blink;
-    Expression blinkLeft;
-    Expression blinkRight;
-    Expression lookUp;
-    Expression lookDown;
-    Expression lookLeft;
-    Expression lookRight;
+    Expression happy{};
+    Expression angry{};
+    Expression sad{};
+    Expression relaxed{};
+    Expression surprised{};
+    Expression aa{};
+    Expression ih{};
+    Expression ou{};
+    Expression ee{};
+    Expression oh{};
+    Expression blink{};
+    Expression blinkLeft{};
+    Expression blinkRight{};
+    Expression lookUp{};
+    Expression lookDown{};
+    Expression lookLeft{};
+    Expression lookRight{};
   };
 
-  Preset preset;
-  Expression custom;
+  Preset preset{};
+  Expression custom{};
 };
 
 struct FirstPerson {
@@ -1417,17 +1417,17 @@ struct FirstPerson {
 };
 
 struct Humanoid {
-  HumanBones humanBones;
+  HumanBones humanBones{};
 };
 
 struct LookAt {
   std::vector<float> offsetFromHeadBone{};
   enum class LookAtType : uint8_t { Bone, Expression };
   LookAtType type;
-  LookAtRangeMap rangeMapHorizontalInner;
-  LookAtRangeMap rangeMapHorizontalOuter;
-  LookAtRangeMap rangeMapVerticalDown;
-  LookAtRangeMap rangeMapVerticalUp;
+  LookAtRangeMap rangeMapHorizontalInner{};
+  LookAtRangeMap rangeMapHorizontalOuter{};
+  LookAtRangeMap rangeMapVerticalDown{};
+  LookAtRangeMap rangeMapVerticalUp{};
 };
 
 struct MaterialsHdrEmissiveMultiplier {
@@ -1439,15 +1439,15 @@ struct MaterialsMtoon {
   bool transparentWithZWrite{};
   uint32_t renderQueueOffsetNumber{};
   std::vector<float> shadeColorFactor = {1, 1, 1};
-  TextureInfo shadeMultiplyTexture;
+  TextureInfo shadeMultiplyTexture{};
   float shadingShiftFactor{};
-  ShadingShiftTextureInfo shadingShiftTexture;
+  ShadingShiftTextureInfo shadingShiftTexture{};
   float shadingToonyFactor = 0.9f;
   float giEqualizationFactor = 0.9f;
   std::vector<float> matcapFactor = {1, 1, 1};
-  TextureInfo matcapTexture;
+  TextureInfo matcapTexture{};
   std::vector<float> parametricRimColorFactor = {0, 0, 0};
-  TextureInfo rimMultiplyTexture;
+  TextureInfo rimMultiplyTexture{};
   float rimLightingMixFactor{};
   float parametricRimFresnelPowerFactor = 1.f;
   float parametricRimLiftFactor{};
@@ -1458,10 +1458,10 @@ struct MaterialsMtoon {
   };
   OutlineWidthMode outlineWidthMode = OutlineWidthMode::None;
   float outlineWidthFactor{};
-  TextureInfo outlineWidthMultiplyTexture;
+  TextureInfo outlineWidthMultiplyTexture{};
   std::vector<float> outlineColorFactor = {0, 0, 0};
   float outlineLightingMixFactor = 1.f;
-  TextureInfo uvAnimationMaskTexture;
+  TextureInfo uvAnimationMaskTexture{};
   float uvAnimationScrollXSpeedFactor{};
   float uvAnimationScrollYSpeedFactor{};
   float uvAnimationRotationSpeedFactor{};
@@ -1469,16 +1469,16 @@ struct MaterialsMtoon {
 
 struct NodeConstraintextension {
   std::string specVersion;
-  Constraint constraint;
+  Constraint constraint{};
 };
 
 struct Vrm {
   std::string specVersion;
-  Meta meta;
-  Humanoid humanoid;
-  FirstPerson firstPerson;
-  LookAt lookAt;
-  Expressions expressions;
+  Meta meta{};
+  Humanoid humanoid{};
+  FirstPerson firstPerson{};
+  LookAt lookAt{};
+  Expressions expressions{};
 };
 inline void from_json(nlohmann::json const &json, ObjectSpace &out_value) {
   std::string type = json.get<std::string>();

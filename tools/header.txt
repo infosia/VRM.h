@@ -23,7 +23,7 @@ inline void ReadRequiredField(TKey &&key, nlohmann::json const &json,
     throw std::runtime_error(msg);
   }
 
-  target = iter->get<TTarget>();
+  target = iter->template get<TTarget>();
 }
 
 template <typename TKey, typename TTarget>
@@ -31,7 +31,7 @@ inline void ReadOptionalField(TKey &&key, nlohmann::json const &json,
                               TTarget &target) {
   const auto iter = json.find(key);
   if (iter != json.end()) {
-    target = iter->get<TTarget>();
+    target = iter->template get<TTarget>();
   }
 }
 

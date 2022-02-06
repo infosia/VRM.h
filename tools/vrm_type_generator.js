@@ -285,7 +285,7 @@ function parse(json, file, version, varname, parent) {
 				out_structs[version].push(indent + primitive + ' ' + name + set_default(properties, primitive) + ';');
 			} else if (!ref && type == 'object') {
 				if (is_vec3(properties)) {
-					out_structs[version].push(indent + 'Vector3 ' + name + ';');
+					out_structs[version].push(indent + 'Vector3 ' + name + '{};');
 				} else if (name == 'floatProperties' || name == 'textureProperties' || name == 'keywordMap' || name == 'vectorProperties' || name == 'tagMap') {
 					const value_type = select_native_type(name);
 					out_structs[version].push(indent + 'std::unordered_map<std::string, ' + value_type + '> ' + name + '{};');
@@ -295,7 +295,7 @@ function parse(json, file, version, varname, parent) {
 					if (properties.additionalProperties) {
 						// can be ignored
 					} else {
-						out_structs[version].push(indent + snake_case(sanitize(name)) + ' ' + name + ';');
+						out_structs[version].push(indent + snake_case(sanitize(name)) + ' ' + name + '{};');
 					}
 				} else {
 					throw new Error('Unknown type: ' + json.type + ' for ' + name + ' in ' + file);
@@ -331,7 +331,7 @@ function parse(json, file, version, varname, parent) {
 				const global_ref = global_references[version][ref];
 				if (global_ref) {
 					let classname = snake_case(sanitize(global_ref.title ? global_ref.title : ref));
-					out_structs[version].push(indent + classname + ' ' + name + ';');
+					out_structs[version].push(indent + classname + ' ' + name + '{};');
 				} else {
 					throw new Error('Unknown reference: ' + ref + ' for ' + name + ' in ' + file);
 				}
@@ -346,9 +346,9 @@ function parse(json, file, version, varname, parent) {
 							// can be ignored
 						} else if (global_ref['enum']) {
 							const enumname = capitalize(sanitize(global_ref.title));
-							out_structs[version].push(indent + enumname + ' ' + name + ';');
+							out_structs[version].push(indent + enumname + ' ' + name + '{};');
 						} else if (global_ref.properties) {
-							out_structs[version].push(indent + snake_case(sanitize(global_ref.title)) + ' ' + name + ';');
+							out_structs[version].push(indent + snake_case(sanitize(global_ref.title)) + ' ' + name + '{};');
 						} else {
 							throw new Error('Unhandled allOf reference: ' + ref + ' in ' + file);
 						}
@@ -368,7 +368,7 @@ function parse(json, file, version, varname, parent) {
 		const global_ref = global_references[version][ref];
 		if (global_ref && varname) {
 			const structname = snake_case(sanitize(global_ref.title));
-			out_structs[version].push(indent + structname + ' ' + varname + ';');
+			out_structs[version].push(indent + structname + ' ' + varname + '{};');
 		} else {
 			throw new Error('Unhandled additionalProperties: ' + ref + ' in ' + file);
 		}
