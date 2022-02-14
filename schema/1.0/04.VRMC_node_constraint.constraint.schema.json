@@ -5,16 +5,11 @@
   "description": "Contains position, rotation, or aim",
   "allOf": [ { "$ref": "glTFProperty.schema.json" } ],
   "properties": {
-    "position": {
-      "$ref": "VRMC_node_constraint.positionConstraint.schema.json"
-    },
     "rotation": {
       "$ref": "VRMC_node_constraint.rotationConstraint.schema.json"
     },
-    "aim": {
-      "$ref": "VRMC_node_constraint.aimConstraint.schema.json"
-    },
     "extensions": { },
     "extras": { }
-  }
+  },
+  "required": [ "rotation" ]
 }

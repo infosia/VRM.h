@@ -40,7 +40,7 @@
       "default": 0.0
     },
     "shadingShiftTexture": {
-      "allOf": [ { "$ref": "VRMC_materials_mtoon.shadingShiftTexture.schema.json" } ]
+      "allOf": [ { "$ref": "mtoon.shadingShiftTexture.schema.json" } ]
     },
     "shadingToonyFactor": {
       "type": "number",
@@ -153,6 +153,6 @@
     "extras": { }
   },
   "required": [
-    "version"
+    "specVersion"
   ]
 }

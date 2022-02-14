@@ -1152,7 +1152,6 @@ struct ShadingShiftTextureInfo {
   float scale = 1.f;
 };
 
-enum class ObjectSpace : uint8_t { Model, Local };
 struct ColliderGroup {
   std::string name;
   std::vector<uint32_t> colliders{};
@@ -1266,24 +1265,6 @@ struct Meta {
   std::string otherLicenseUrl;
 };
 
-struct AimConstraint {
-  uint32_t source{};
-  ObjectSpace sourceSpace{};
-  ObjectSpace destinationSpace{};
-  std::vector<float> aimVector = {0, 0, 1};
-  std::vector<float> upVector = {0, 0, 1};
-  std::vector<bool> freezeAxes = {true, true};
-  float weight = 1.f;
-};
-
-struct PositionConstraint {
-  uint32_t source{};
-  ObjectSpace sourceSpace{};
-  ObjectSpace destinationSpace{};
-  std::vector<bool> freezeAxes = {true, true, true};
-  float weight = 1.f;
-};
-
 struct RotationConstraint {
   uint32_t source{};
   std::vector<bool> axes = {true, true, true};
@@ -1360,9 +1341,7 @@ struct HumanBones {
 };
 
 struct Constraint {
-  PositionConstraint position{};
   RotationConstraint rotation{};
-  AimConstraint aim{};
 };
 
 struct SpringBone {
@@ -1477,15 +1456,6 @@ struct Vrm {
   LookAt lookAt{};
   Expressions expressions{};
 };
-inline void from_json(nlohmann::json const &json, ObjectSpace &out_value) {
-  std::string type = json.get<std::string>();
-  if (type == "model") {
-    out_value = ObjectSpace::Model;
-  } else if (type == "local") {
-    out_value = ObjectSpace::Local;
-  }
-}
-
 inline void from_json(nlohmann::json const &json,
                       MaterialColorBind::MaterialColorType &out_value) {
   std::string type = json.get<std::string>();
@@ -1595,19 +1565,6 @@ inline void from_json(nlohmann::json const &json,
     out_value = MaterialsMtoon::OutlineWidthMode::ScreenCoordinates;
   }
 }
-inline void to_json(nlohmann::json &json, ObjectSpace const &in_value) {
-  switch (in_value) {
-  case ObjectSpace::Model:
-    json = "model";
-    break;
-  case ObjectSpace::Local:
-    json = "local";
-    break;
-  default:
-    throw std::runtime_error("Unknown ObjectSpace value");
-  }
-}
-
 inline void to_json(nlohmann::json &json,
                     MaterialColorBind::MaterialColorType const &in_value) {
   switch (in_value) {
@@ -1862,22 +1819,6 @@ inline void to_json(nlohmann::json &json, Meta const &in_value) {
                    Meta::ModificationType::Prohibited);
   VRMC::WriteField("otherLicenseUrl", json, in_value.otherLicenseUrl, {});
 }
-inline void to_json(nlohmann::json &json, AimConstraint const &in_value) {
-  VRMC::WriteField("source", json, in_value.source, static_cast<uint32_t>(0));
-  VRMC::WriteField("sourceSpace", json, in_value.sourceSpace, {});
-  VRMC::WriteField("destinationSpace", json, in_value.destinationSpace, {});
-  VRMC::WriteField("aimVector", json, in_value.aimVector, {0, 0, 1});
-  VRMC::WriteField("upVector", json, in_value.upVector, {0, 0, 1});
-  VRMC::WriteField("freezeAxes", json, in_value.freezeAxes, {true, true});
-  VRMC::WriteField("weight", json, in_value.weight, 1.f);
-}
-inline void to_json(nlohmann::json &json, PositionConstraint const &in_value) {
-  VRMC::WriteField("source", json, in_value.source, static_cast<uint32_t>(0));
-  VRMC::WriteField("sourceSpace", json, in_value.sourceSpace, {});
-  VRMC::WriteField("destinationSpace", json, in_value.destinationSpace, {});
-  VRMC::WriteField("freezeAxes", json, in_value.freezeAxes, {true, true, true});
-  VRMC::WriteField("weight", json, in_value.weight, 1.f);
-}
 inline void to_json(nlohmann::json &json, RotationConstraint const &in_value) {
   VRMC::WriteField("source", json, in_value.source, static_cast<uint32_t>(0));
   VRMC::WriteField("axes", json, in_value.axes, {true, true, true});
@@ -1959,9 +1900,7 @@ inline void to_json(nlohmann::json &json, HumanBones const &in_value) {
   VRMC::WriteField("rightLittleDistal", json, in_value.rightLittleDistal);
 }
 inline void to_json(nlohmann::json &json, Constraint const &in_value) {
-  VRMC::WriteField("position", json, in_value.position);
   VRMC::WriteField("rotation", json, in_value.rotation);
-  VRMC::WriteField("aim", json, in_value.aim);
 }
 inline void to_json(nlohmann::json &json, SpringBone const &in_value) {
   VRMC::WriteField("specVersion", json, in_value.specVersion, {});
@@ -2180,23 +2119,6 @@ inline void from_json(nlohmann::json const &json, Meta &out_value) {
   VRMC::ReadOptionalField("modification", json, out_value.modification);
   VRMC::ReadOptionalField("otherLicenseUrl", json, out_value.otherLicenseUrl);
 }
-inline void from_json(nlohmann::json const &json, AimConstraint &out_value) {
-  VRMC::ReadRequiredField("source", json, out_value.source);
-  VRMC::ReadOptionalField("sourceSpace", json, out_value.sourceSpace);
-  VRMC::ReadOptionalField("destinationSpace", json, out_value.destinationSpace);
-  VRMC::ReadOptionalField("aimVector", json, out_value.aimVector);
-  VRMC::ReadOptionalField("upVector", json, out_value.upVector);
-  VRMC::ReadOptionalField("freezeAxes", json, out_value.freezeAxes);
-  VRMC::ReadOptionalField("weight", json, out_value.weight);
-}
-inline void from_json(nlohmann::json const &json,
-                      PositionConstraint &out_value) {
-  VRMC::ReadRequiredField("source", json, out_value.source);
-  VRMC::ReadOptionalField("sourceSpace", json, out_value.sourceSpace);
-  VRMC::ReadOptionalField("destinationSpace", json, out_value.destinationSpace);
-  VRMC::ReadOptionalField("freezeAxes", json, out_value.freezeAxes);
-  VRMC::ReadOptionalField("weight", json, out_value.weight);
-}
 inline void from_json(nlohmann::json const &json,
                       RotationConstraint &out_value) {
   VRMC::ReadRequiredField("source", json, out_value.source);
@@ -2291,12 +2213,10 @@ inline void from_json(nlohmann::json const &json, HumanBones &out_value) {
                           out_value.rightLittleDistal);
 }
 inline void from_json(nlohmann::json const &json, Constraint &out_value) {
-  VRMC::ReadOptionalField("position", json, out_value.position);
-  VRMC::ReadOptionalField("rotation", json, out_value.rotation);
-  VRMC::ReadOptionalField("aim", json, out_value.aim);
+  VRMC::ReadRequiredField("rotation", json, out_value.rotation);
 }
 inline void from_json(nlohmann::json const &json, SpringBone &out_value) {
-  VRMC::ReadOptionalField("specVersion", json, out_value.specVersion);
+  VRMC::ReadRequiredField("specVersion", json, out_value.specVersion);
   VRMC::ReadOptionalField("colliders", json, out_value.colliders);
   VRMC::ReadOptionalField("colliderGroups", json, out_value.colliderGroups);
   VRMC::ReadOptionalField("springs", json, out_value.springs);
@@ -2362,7 +2282,7 @@ inline void from_json(nlohmann::json const &json,
                           out_value.emissiveMultiplier);
 }
 inline void from_json(nlohmann::json const &json, MaterialsMtoon &out_value) {
-  VRMC::ReadOptionalField("specVersion", json, out_value.specVersion);
+  VRMC::ReadRequiredField("specVersion", json, out_value.specVersion);
   VRMC::ReadOptionalField("transparentWithZWrite", json,
                           out_value.transparentWithZWrite);
   VRMC::ReadOptionalField("renderQueueOffsetNumber", json,
@@ -2410,8 +2330,8 @@ inline void from_json(nlohmann::json const &json, MaterialsMtoon &out_value) {
 }
 inline void from_json(nlohmann::json const &json,
                       NodeConstraintextension &out_value) {
-  VRMC::ReadOptionalField("specVersion", json, out_value.specVersion);
-  VRMC::ReadOptionalField("constraint", json, out_value.constraint);
+  VRMC::ReadRequiredField("specVersion", json, out_value.specVersion);
+  VRMC::ReadRequiredField("constraint", json, out_value.constraint);
 }
 inline void from_json(nlohmann::json const &json, Vrm &out_value) {
   VRMC::ReadRequiredField("specVersion", json, out_value.specVersion);
