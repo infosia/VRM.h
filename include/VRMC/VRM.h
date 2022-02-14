@@ -11,8 +11,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include <nlohmann/json.hpp>
-
 namespace VRMC {
 template <typename TKey, typename TTarget>
 inline void ReadRequiredField(TKey &&key, nlohmann::json const &json,
@@ -1288,9 +1286,7 @@ struct PositionConstraint {
 
 struct RotationConstraint {
   uint32_t source{};
-  ObjectSpace sourceSpace{};
-  ObjectSpace destinationSpace{};
-  std::vector<bool> freezeAxes = {true, true, true};
+  std::vector<bool> axes = {true, true, true};
   float weight = 1.f;
 };
 
@@ -1406,6 +1402,7 @@ struct Expressions {
     Expression lookDown{};
     Expression lookLeft{};
     Expression lookRight{};
+    Expression neutral{};
   };
 
   Preset preset{};
@@ -1883,9 +1880,7 @@ inline void to_json(nlohmann::json &json, PositionConstraint const &in_value) {
 }
 inline void to_json(nlohmann::json &json, RotationConstraint const &in_value) {
   VRMC::WriteField("source", json, in_value.source, static_cast<uint32_t>(0));
-  VRMC::WriteField("sourceSpace", json, in_value.sourceSpace, {});
-  VRMC::WriteField("destinationSpace", json, in_value.destinationSpace, {});
-  VRMC::WriteField("freezeAxes", json, in_value.freezeAxes, {true, true, true});
+  VRMC::WriteField("axes", json, in_value.axes, {true, true, true});
   VRMC::WriteField("weight", json, in_value.weight, 1.f);
 }
 inline void to_json(nlohmann::json &json, Collider const &in_value) {
@@ -2009,6 +2004,7 @@ inline void to_json(nlohmann::json &json, Expressions::Preset const &in_value) {
   VRMC::WriteField("lookDown", json, in_value.lookDown);
   VRMC::WriteField("lookLeft", json, in_value.lookLeft);
   VRMC::WriteField("lookRight", json, in_value.lookRight);
+  VRMC::WriteField("neutral", json, in_value.neutral);
 }
 inline void to_json(nlohmann::json &json, FirstPerson const &in_value) {
   VRMC::WriteField("meshAnnotations", json, in_value.meshAnnotations);
@@ -2204,9 +2200,7 @@ inline void from_json(nlohmann::json const &json,
 inline void from_json(nlohmann::json const &json,
                       RotationConstraint &out_value) {
   VRMC::ReadRequiredField("source", json, out_value.source);
-  VRMC::ReadOptionalField("sourceSpace", json, out_value.sourceSpace);
-  VRMC::ReadOptionalField("destinationSpace", json, out_value.destinationSpace);
-  VRMC::ReadOptionalField("freezeAxes", json, out_value.freezeAxes);
+  VRMC::ReadOptionalField("axes", json, out_value.axes);
   VRMC::ReadOptionalField("weight", json, out_value.weight);
 }
 inline void from_json(nlohmann::json const &json, Collider &out_value) {
@@ -2341,6 +2335,7 @@ inline void from_json(nlohmann::json const &json,
   VRMC::ReadOptionalField("lookDown", json, out_value.lookDown);
   VRMC::ReadOptionalField("lookLeft", json, out_value.lookLeft);
   VRMC::ReadOptionalField("lookRight", json, out_value.lookRight);
+  VRMC::ReadOptionalField("neutral", json, out_value.neutral);
 }
 inline void from_json(nlohmann::json const &json, FirstPerson &out_value) {
   VRMC::ReadOptionalField("meshAnnotations", json, out_value.meshAnnotations);

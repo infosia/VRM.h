@@ -2,6 +2,8 @@
 #include <filesystem>
 #include <fx/gltf.h>
 
+#include <nlohmann/json.hpp>
+
 #define CGLTF_IMPLEMENTATION
 #include <cgltf/cgltf.h>
 
