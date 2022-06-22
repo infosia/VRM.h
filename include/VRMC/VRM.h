@@ -1265,9 +1265,29 @@ struct Meta {
   std::string otherLicenseUrl;
 };
 
+struct AimConstraint {
+  uint32_t source{};
+  enum class AimAxis : uint8_t {
+    PositiveX,
+    NegativeX,
+    PositiveY,
+    NegativeY,
+    PositiveZ,
+    NegativeZ
+  };
+  AimAxis aimAxis;
+  float weight = 1.f;
+};
+
+struct RollConstraint {
+  uint32_t source{};
+  enum class RollAxis : uint8_t { X, Y, Z };
+  RollAxis rollAxis;
+  float weight = 1.f;
+};
+
 struct RotationConstraint {
   uint32_t source{};
-  std::vector<bool> axes = {true, true, true};
   float weight = 1.f;
 };
 
@@ -1280,6 +1300,7 @@ struct Spring {
   std::string name;
   std::vector<SpringBoneJoint> joints{};
   std::vector<uint32_t> colliderGroups{};
+  uint32_t center{};
 };
 
 struct HumanBones {
@@ -1341,6 +1362,8 @@ struct HumanBones {
 };
 
 struct Constraint {
+  RollConstraint roll{};
+  AimConstraint aim{};
   RotationConstraint rotation{};
 };
 
@@ -1533,6 +1556,36 @@ inline void from_json(nlohmann::json const &json,
 }
 
 inline void from_json(nlohmann::json const &json,
+                      AimConstraint::AimAxis &out_value) {
+  std::string type = json.get<std::string>();
+  if (type == "PositiveX") {
+    out_value = AimConstraint::AimAxis::PositiveX;
+  } else if (type == "NegativeX") {
+    out_value = AimConstraint::AimAxis::NegativeX;
+  } else if (type == "PositiveY") {
+    out_value = AimConstraint::AimAxis::PositiveY;
+  } else if (type == "NegativeY") {
+    out_value = AimConstraint::AimAxis::NegativeY;
+  } else if (type == "PositiveZ") {
+    out_value = AimConstraint::AimAxis::PositiveZ;
+  } else if (type == "NegativeZ") {
+    out_value = AimConstraint::AimAxis::NegativeZ;
+  }
+}
+
+inline void from_json(nlohmann::json const &json,
+                      RollConstraint::RollAxis &out_value) {
+  std::string type = json.get<std::string>();
+  if (type == "X") {
+    out_value = RollConstraint::RollAxis::X;
+  } else if (type == "Y") {
+    out_value = RollConstraint::RollAxis::Y;
+  } else if (type == "Z") {
+    out_value = RollConstraint::RollAxis::Z;
+  }
+}
+
+inline void from_json(nlohmann::json const &json,
                       Expression::ExpressionOverrideType &out_value) {
   std::string type = json.get<std::string>();
   if (type == "none") {
@@ -1670,6 +1723,49 @@ inline void to_json(nlohmann::json &json,
     break;
   default:
     throw std::runtime_error("Unknown ModificationType value");
+  }
+}
+
+inline void to_json(nlohmann::json &json,
+                    AimConstraint::AimAxis const &in_value) {
+  switch (in_value) {
+  case AimConstraint::AimAxis::PositiveX:
+    json = "PositiveX";
+    break;
+  case AimConstraint::AimAxis::NegativeX:
+    json = "NegativeX";
+    break;
+  case AimConstraint::AimAxis::PositiveY:
+    json = "PositiveY";
+    break;
+  case AimConstraint::AimAxis::NegativeY:
+    json = "NegativeY";
+    break;
+  case AimConstraint::AimAxis::PositiveZ:
+    json = "PositiveZ";
+    break;
+  case AimConstraint::AimAxis::NegativeZ:
+    json = "NegativeZ";
+    break;
+  default:
+    throw std::runtime_error("Unknown AimAxis value");
+  }
+}
+
+inline void to_json(nlohmann::json &json,
+                    RollConstraint::RollAxis const &in_value) {
+  switch (in_value) {
+  case RollConstraint::RollAxis::X:
+    json = "X";
+    break;
+  case RollConstraint::RollAxis::Y:
+    json = "Y";
+    break;
+  case RollConstraint::RollAxis::Z:
+    json = "Z";
+    break;
+  default:
+    throw std::runtime_error("Unknown RollAxis value");
   }
 }
 
@@ -1819,9 +1915,18 @@ inline void to_json(nlohmann::json &json, Meta const &in_value) {
                    Meta::ModificationType::Prohibited);
   VRMC::WriteField("otherLicenseUrl", json, in_value.otherLicenseUrl, {});
 }
+inline void to_json(nlohmann::json &json, AimConstraint const &in_value) {
+  VRMC::WriteField("source", json, in_value.source, static_cast<uint32_t>(0));
+  VRMC::WriteField("aimAxis", json, in_value.aimAxis, {});
+  VRMC::WriteField("weight", json, in_value.weight, 1.f);
+}
+inline void to_json(nlohmann::json &json, RollConstraint const &in_value) {
+  VRMC::WriteField("source", json, in_value.source, static_cast<uint32_t>(0));
+  VRMC::WriteField("rollAxis", json, in_value.rollAxis, {});
+  VRMC::WriteField("weight", json, in_value.weight, 1.f);
+}
 inline void to_json(nlohmann::json &json, RotationConstraint const &in_value) {
   VRMC::WriteField("source", json, in_value.source, static_cast<uint32_t>(0));
-  VRMC::WriteField("axes", json, in_value.axes, {true, true, true});
   VRMC::WriteField("weight", json, in_value.weight, 1.f);
 }
 inline void to_json(nlohmann::json &json, Collider const &in_value) {
@@ -1832,6 +1937,7 @@ inline void to_json(nlohmann::json &json, Spring const &in_value) {
   VRMC::WriteField("name", json, in_value.name, {});
   VRMC::WriteField("joints", json, in_value.joints);
   VRMC::WriteField("colliderGroups", json, in_value.colliderGroups);
+  VRMC::WriteField("center", json, in_value.center, static_cast<uint32_t>(0));
 }
 inline void to_json(nlohmann::json &json, HumanBones const &in_value) {
   VRMC::WriteField("hips", json, in_value.hips);
@@ -1900,6 +2006,8 @@ inline void to_json(nlohmann::json &json, HumanBones const &in_value) {
   VRMC::WriteField("rightLittleDistal", json, in_value.rightLittleDistal);
 }
 inline void to_json(nlohmann::json &json, Constraint const &in_value) {
+  VRMC::WriteField("roll", json, in_value.roll);
+  VRMC::WriteField("aim", json, in_value.aim);
   VRMC::WriteField("rotation", json, in_value.rotation);
 }
 inline void to_json(nlohmann::json &json, SpringBone const &in_value) {
@@ -2119,10 +2227,19 @@ inline void from_json(nlohmann::json const &json, Meta &out_value) {
   VRMC::ReadOptionalField("modification", json, out_value.modification);
   VRMC::ReadOptionalField("otherLicenseUrl", json, out_value.otherLicenseUrl);
 }
+inline void from_json(nlohmann::json const &json, AimConstraint &out_value) {
+  VRMC::ReadRequiredField("source", json, out_value.source);
+  VRMC::ReadRequiredField("aimAxis", json, out_value.aimAxis);
+  VRMC::ReadOptionalField("weight", json, out_value.weight);
+}
+inline void from_json(nlohmann::json const &json, RollConstraint &out_value) {
+  VRMC::ReadRequiredField("source", json, out_value.source);
+  VRMC::ReadRequiredField("rollAxis", json, out_value.rollAxis);
+  VRMC::ReadOptionalField("weight", json, out_value.weight);
+}
 inline void from_json(nlohmann::json const &json,
                       RotationConstraint &out_value) {
   VRMC::ReadRequiredField("source", json, out_value.source);
-  VRMC::ReadOptionalField("axes", json, out_value.axes);
   VRMC::ReadOptionalField("weight", json, out_value.weight);
 }
 inline void from_json(nlohmann::json const &json, Collider &out_value) {
@@ -2133,6 +2250,7 @@ inline void from_json(nlohmann::json const &json, Spring &out_value) {
   VRMC::ReadOptionalField("name", json, out_value.name);
   VRMC::ReadRequiredField("joints", json, out_value.joints);
   VRMC::ReadOptionalField("colliderGroups", json, out_value.colliderGroups);
+  VRMC::ReadOptionalField("center", json, out_value.center);
 }
 inline void from_json(nlohmann::json const &json, HumanBones &out_value) {
   VRMC::ReadRequiredField("hips", json, out_value.hips);
@@ -2213,7 +2331,9 @@ inline void from_json(nlohmann::json const &json, HumanBones &out_value) {
                           out_value.rightLittleDistal);
 }
 inline void from_json(nlohmann::json const &json, Constraint &out_value) {
-  VRMC::ReadRequiredField("rotation", json, out_value.rotation);
+  VRMC::ReadOptionalField("roll", json, out_value.roll);
+  VRMC::ReadOptionalField("aim", json, out_value.aim);
+  VRMC::ReadOptionalField("rotation", json, out_value.rotation);
 }
 inline void from_json(nlohmann::json const &json, SpringBone &out_value) {
   VRMC::ReadRequiredField("specVersion", json, out_value.specVersion);

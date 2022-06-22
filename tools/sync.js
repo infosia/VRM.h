@@ -24,6 +24,8 @@ const files = [
 '02.VRMC_vrm.lookAt.rangeMap.schema.json',
 '02.VRMC_vrm.meta.schema.json',
 '03.VRMC_node_constraint.rotationConstraint.schema.json',
+'03.VRMC_node_constraint.rollConstraint.schema.json',
+'03.VRMC_node_constraint.aimConstraint.schema.json',
 '03.VRMC_springBone.collider.schema.json',
 '03.VRMC_springBone.spring.schema.json',
 '03.VRMC_vrm.humanoid.humanBones.schema.json',
@@ -47,7 +49,7 @@ files.forEach(dst => {
   }
   let dir = 'VRMC_vrm-1.0-beta';
   if (/^VRMC_node_constraint/.test(src)) {
-    dir = 'VRMC_node_constraint-1.0_draft';
+    dir = 'VRMC_node_constraint-1.0_beta';
   } else if (/^VRMC_springBone./.test(src)) {
     dir = 'VRMC_springBone-1.0-beta';
   } else if (/^mtoon/.test(src)) {
