@@ -1188,6 +1188,7 @@ struct MaterialColorBind {
     Color,
     EmissionColor,
     ShadeColor,
+    MatcapColor,
     RimColor,
     OutlineColor
   };
@@ -1329,8 +1330,8 @@ struct HumanBones {
   HumanBone rightUpperArm{};
   HumanBone rightLowerArm{};
   HumanBone rightHand{};
+  HumanBone leftThumbMetacarpal{};
   HumanBone leftThumbProximal{};
-  HumanBone leftThumbIntermediate{};
   HumanBone leftThumbDistal{};
   HumanBone leftIndexProximal{};
   HumanBone leftIndexIntermediate{};
@@ -1344,8 +1345,8 @@ struct HumanBones {
   HumanBone leftLittleProximal{};
   HumanBone leftLittleIntermediate{};
   HumanBone leftLittleDistal{};
+  HumanBone rightThumbMetacarpal{};
   HumanBone rightThumbProximal{};
-  HumanBone rightThumbIntermediate{};
   HumanBone rightThumbDistal{};
   HumanBone rightIndexProximal{};
   HumanBone rightIndexIntermediate{};
@@ -1447,8 +1448,8 @@ struct MaterialsMtoon {
   TextureInfo matcapTexture{};
   std::vector<float> parametricRimColorFactor = {0, 0, 0};
   TextureInfo rimMultiplyTexture{};
-  float rimLightingMixFactor{};
-  float parametricRimFresnelPowerFactor = 1.f;
+  float rimLightingMixFactor = 1.f;
+  float parametricRimFresnelPowerFactor = 5.f;
   float parametricRimLiftFactor{};
   enum class OutlineWidthMode : uint8_t {
     None,
@@ -1479,6 +1480,137 @@ struct Vrm {
   LookAt lookAt{};
   Expressions expressions{};
 };
+
+struct ExtendedColliderShape {
+  struct Sphere {
+    std::vector<float> offset = {0, 0, 0};
+    float radius{};
+    bool inside{};
+  };
+
+  Sphere sphere{};
+  struct Capsule {
+    std::vector<float> offset = {0, 0, 0};
+    float radius{};
+    std::vector<float> tail = {0, 0, 0};
+    bool inside{};
+  };
+
+  Capsule capsule{};
+  struct Plane {
+    std::vector<float> offset = {0, 0, 0};
+    std::vector<float> normal = {0, 0, 1};
+  };
+
+  Plane plane{};
+};
+
+struct SpringBoneExtendedCollider {
+  std::string specVersion;
+  ExtendedColliderShape shape{};
+};
+
+struct VrmaHumanBone {
+  uint32_t node{};
+};
+
+struct VrmaHumanBones {
+  VrmaHumanBone hips{};
+  VrmaHumanBone spine{};
+  VrmaHumanBone chest{};
+  VrmaHumanBone upperChest{};
+  VrmaHumanBone neck{};
+  VrmaHumanBone head{};
+  VrmaHumanBone jaw{};
+  VrmaHumanBone leftUpperLeg{};
+  VrmaHumanBone leftLowerLeg{};
+  VrmaHumanBone leftFoot{};
+  VrmaHumanBone leftToes{};
+  VrmaHumanBone rightUpperLeg{};
+  VrmaHumanBone rightLowerLeg{};
+  VrmaHumanBone rightFoot{};
+  VrmaHumanBone rightToes{};
+  VrmaHumanBone leftShoulder{};
+  VrmaHumanBone leftUpperArm{};
+  VrmaHumanBone leftLowerArm{};
+  VrmaHumanBone leftHand{};
+  VrmaHumanBone rightShoulder{};
+  VrmaHumanBone rightUpperArm{};
+  VrmaHumanBone rightLowerArm{};
+  VrmaHumanBone rightHand{};
+  VrmaHumanBone leftThumbMetacarpal{};
+  VrmaHumanBone leftThumbProximal{};
+  VrmaHumanBone leftThumbDistal{};
+  VrmaHumanBone leftIndexProximal{};
+  VrmaHumanBone leftIndexIntermediate{};
+  VrmaHumanBone leftIndexDistal{};
+  VrmaHumanBone leftMiddleProximal{};
+  VrmaHumanBone leftMiddleIntermediate{};
+  VrmaHumanBone leftMiddleDistal{};
+  VrmaHumanBone leftRingProximal{};
+  VrmaHumanBone leftRingIntermediate{};
+  VrmaHumanBone leftRingDistal{};
+  VrmaHumanBone leftLittleProximal{};
+  VrmaHumanBone leftLittleIntermediate{};
+  VrmaHumanBone leftLittleDistal{};
+  VrmaHumanBone rightThumbMetacarpal{};
+  VrmaHumanBone rightThumbProximal{};
+  VrmaHumanBone rightThumbDistal{};
+  VrmaHumanBone rightIndexProximal{};
+  VrmaHumanBone rightIndexIntermediate{};
+  VrmaHumanBone rightIndexDistal{};
+  VrmaHumanBone rightMiddleProximal{};
+  VrmaHumanBone rightMiddleIntermediate{};
+  VrmaHumanBone rightMiddleDistal{};
+  VrmaHumanBone rightRingProximal{};
+  VrmaHumanBone rightRingIntermediate{};
+  VrmaHumanBone rightRingDistal{};
+  VrmaHumanBone rightLittleProximal{};
+  VrmaHumanBone rightLittleIntermediate{};
+  VrmaHumanBone rightLittleDistal{};
+};
+
+struct VrmaHumanoid {
+  VrmaHumanBones humanBones{};
+};
+
+struct VrmaExpression {
+  uint32_t node{};
+};
+
+struct VrmaExpressions {
+  struct Preset {
+    VrmaExpression happy{};
+    VrmaExpression angry{};
+    VrmaExpression sad{};
+    VrmaExpression relaxed{};
+    VrmaExpression surprised{};
+    VrmaExpression aa{};
+    VrmaExpression ih{};
+    VrmaExpression ou{};
+    VrmaExpression ee{};
+    VrmaExpression oh{};
+    VrmaExpression blink{};
+    VrmaExpression blinkLeft{};
+    VrmaExpression blinkRight{};
+    VrmaExpression neutral{};
+  };
+
+  Preset preset{};
+  VrmaExpression custom{};
+};
+
+struct VrmaLookAt {
+  uint32_t node{};
+  std::vector<float> offsetFromHeadBone{};
+};
+
+struct VrmAnimation {
+  std::string specVersion;
+  VrmaHumanoid humanoid{};
+  VrmaExpressions expressions{};
+  VrmaLookAt lookAt{};
+};
 inline void from_json(nlohmann::json const &json,
                       MaterialColorBind::MaterialColorType &out_value) {
   std::string type = json.get<std::string>();
@@ -1488,6 +1620,8 @@ inline void from_json(nlohmann::json const &json,
     out_value = MaterialColorBind::MaterialColorType::EmissionColor;
   } else if (type == "shadeColor") {
     out_value = MaterialColorBind::MaterialColorType::ShadeColor;
+  } else if (type == "matcapColor") {
+    out_value = MaterialColorBind::MaterialColorType::MatcapColor;
   } else if (type == "rimColor") {
     out_value = MaterialColorBind::MaterialColorType::RimColor;
   } else if (type == "outlineColor") {
@@ -1629,6 +1763,9 @@ inline void to_json(nlohmann::json &json,
     break;
   case MaterialColorBind::MaterialColorType::ShadeColor:
     json = "shadeColor";
+    break;
+  case MaterialColorBind::MaterialColorType::MatcapColor:
+    json = "matcapColor";
     break;
   case MaterialColorBind::MaterialColorType::RimColor:
     json = "rimColor";
@@ -1965,9 +2102,8 @@ inline void to_json(nlohmann::json &json, HumanBones const &in_value) {
   VRMC::WriteField("rightUpperArm", json, in_value.rightUpperArm);
   VRMC::WriteField("rightLowerArm", json, in_value.rightLowerArm);
   VRMC::WriteField("rightHand", json, in_value.rightHand);
+  VRMC::WriteField("leftThumbMetacarpal", json, in_value.leftThumbMetacarpal);
   VRMC::WriteField("leftThumbProximal", json, in_value.leftThumbProximal);
-  VRMC::WriteField("leftThumbIntermediate", json,
-                   in_value.leftThumbIntermediate);
   VRMC::WriteField("leftThumbDistal", json, in_value.leftThumbDistal);
   VRMC::WriteField("leftIndexProximal", json, in_value.leftIndexProximal);
   VRMC::WriteField("leftIndexIntermediate", json,
@@ -1984,9 +2120,8 @@ inline void to_json(nlohmann::json &json, HumanBones const &in_value) {
   VRMC::WriteField("leftLittleIntermediate", json,
                    in_value.leftLittleIntermediate);
   VRMC::WriteField("leftLittleDistal", json, in_value.leftLittleDistal);
+  VRMC::WriteField("rightThumbMetacarpal", json, in_value.rightThumbMetacarpal);
   VRMC::WriteField("rightThumbProximal", json, in_value.rightThumbProximal);
-  VRMC::WriteField("rightThumbIntermediate", json,
-                   in_value.rightThumbIntermediate);
   VRMC::WriteField("rightThumbDistal", json, in_value.rightThumbDistal);
   VRMC::WriteField("rightIndexProximal", json, in_value.rightIndexProximal);
   VRMC::WriteField("rightIndexIntermediate", json,
@@ -2096,9 +2231,9 @@ inline void to_json(nlohmann::json &json, MaterialsMtoon const &in_value) {
                    in_value.parametricRimColorFactor, {0, 0, 0});
   VRMC::WriteField("rimMultiplyTexture", json, in_value.rimMultiplyTexture);
   VRMC::WriteField("rimLightingMixFactor", json, in_value.rimLightingMixFactor,
-                   0.f);
+                   1.f);
   VRMC::WriteField("parametricRimFresnelPowerFactor", json,
-                   in_value.parametricRimFresnelPowerFactor, 1.f);
+                   in_value.parametricRimFresnelPowerFactor, 5.f);
   VRMC::WriteField("parametricRimLiftFactor", json,
                    in_value.parametricRimLiftFactor, 0.f);
   VRMC::WriteField("outlineWidthMode", json, in_value.outlineWidthMode,
@@ -2132,6 +2267,137 @@ inline void to_json(nlohmann::json &json, Vrm const &in_value) {
   VRMC::WriteField("firstPerson", json, in_value.firstPerson);
   VRMC::WriteField("lookAt", json, in_value.lookAt);
   VRMC::WriteField("expressions", json, in_value.expressions);
+}
+inline void to_json(nlohmann::json &json,
+                    ExtendedColliderShape const &in_value) {
+  VRMC::WriteField("sphere", json, in_value.sphere);
+  VRMC::WriteField("capsule", json, in_value.capsule);
+  VRMC::WriteField("plane", json, in_value.plane);
+}
+inline void to_json(nlohmann::json &json,
+                    ExtendedColliderShape::Sphere const &in_value) {
+  VRMC::WriteField("offset", json, in_value.offset, {0, 0, 0});
+  VRMC::WriteField("radius", json, in_value.radius, 0.f);
+  VRMC::WriteField("inside", json, in_value.inside, false);
+}
+inline void to_json(nlohmann::json &json,
+                    ExtendedColliderShape::Capsule const &in_value) {
+  VRMC::WriteField("offset", json, in_value.offset, {0, 0, 0});
+  VRMC::WriteField("radius", json, in_value.radius, 0.f);
+  VRMC::WriteField("tail", json, in_value.tail, {0, 0, 0});
+  VRMC::WriteField("inside", json, in_value.inside, false);
+}
+inline void to_json(nlohmann::json &json,
+                    ExtendedColliderShape::Plane const &in_value) {
+  VRMC::WriteField("offset", json, in_value.offset, {0, 0, 0});
+  VRMC::WriteField("normal", json, in_value.normal, {0, 0, 1});
+}
+inline void to_json(nlohmann::json &json,
+                    SpringBoneExtendedCollider const &in_value) {
+  VRMC::WriteField("specVersion", json, in_value.specVersion, {});
+  VRMC::WriteField("shape", json, in_value.shape);
+}
+inline void to_json(nlohmann::json &json, VrmaHumanBone const &in_value) {
+  VRMC::WriteField("node", json, in_value.node, static_cast<uint32_t>(0));
+}
+inline void to_json(nlohmann::json &json, VrmaHumanBones const &in_value) {
+  VRMC::WriteField("hips", json, in_value.hips);
+  VRMC::WriteField("spine", json, in_value.spine);
+  VRMC::WriteField("chest", json, in_value.chest);
+  VRMC::WriteField("upperChest", json, in_value.upperChest);
+  VRMC::WriteField("neck", json, in_value.neck);
+  VRMC::WriteField("head", json, in_value.head);
+  VRMC::WriteField("jaw", json, in_value.jaw);
+  VRMC::WriteField("leftUpperLeg", json, in_value.leftUpperLeg);
+  VRMC::WriteField("leftLowerLeg", json, in_value.leftLowerLeg);
+  VRMC::WriteField("leftFoot", json, in_value.leftFoot);
+  VRMC::WriteField("leftToes", json, in_value.leftToes);
+  VRMC::WriteField("rightUpperLeg", json, in_value.rightUpperLeg);
+  VRMC::WriteField("rightLowerLeg", json, in_value.rightLowerLeg);
+  VRMC::WriteField("rightFoot", json, in_value.rightFoot);
+  VRMC::WriteField("rightToes", json, in_value.rightToes);
+  VRMC::WriteField("leftShoulder", json, in_value.leftShoulder);
+  VRMC::WriteField("leftUpperArm", json, in_value.leftUpperArm);
+  VRMC::WriteField("leftLowerArm", json, in_value.leftLowerArm);
+  VRMC::WriteField("leftHand", json, in_value.leftHand);
+  VRMC::WriteField("rightShoulder", json, in_value.rightShoulder);
+  VRMC::WriteField("rightUpperArm", json, in_value.rightUpperArm);
+  VRMC::WriteField("rightLowerArm", json, in_value.rightLowerArm);
+  VRMC::WriteField("rightHand", json, in_value.rightHand);
+  VRMC::WriteField("leftThumbMetacarpal", json, in_value.leftThumbMetacarpal);
+  VRMC::WriteField("leftThumbProximal", json, in_value.leftThumbProximal);
+  VRMC::WriteField("leftThumbDistal", json, in_value.leftThumbDistal);
+  VRMC::WriteField("leftIndexProximal", json, in_value.leftIndexProximal);
+  VRMC::WriteField("leftIndexIntermediate", json,
+                   in_value.leftIndexIntermediate);
+  VRMC::WriteField("leftIndexDistal", json, in_value.leftIndexDistal);
+  VRMC::WriteField("leftMiddleProximal", json, in_value.leftMiddleProximal);
+  VRMC::WriteField("leftMiddleIntermediate", json,
+                   in_value.leftMiddleIntermediate);
+  VRMC::WriteField("leftMiddleDistal", json, in_value.leftMiddleDistal);
+  VRMC::WriteField("leftRingProximal", json, in_value.leftRingProximal);
+  VRMC::WriteField("leftRingIntermediate", json, in_value.leftRingIntermediate);
+  VRMC::WriteField("leftRingDistal", json, in_value.leftRingDistal);
+  VRMC::WriteField("leftLittleProximal", json, in_value.leftLittleProximal);
+  VRMC::WriteField("leftLittleIntermediate", json,
+                   in_value.leftLittleIntermediate);
+  VRMC::WriteField("leftLittleDistal", json, in_value.leftLittleDistal);
+  VRMC::WriteField("rightThumbMetacarpal", json, in_value.rightThumbMetacarpal);
+  VRMC::WriteField("rightThumbProximal", json, in_value.rightThumbProximal);
+  VRMC::WriteField("rightThumbDistal", json, in_value.rightThumbDistal);
+  VRMC::WriteField("rightIndexProximal", json, in_value.rightIndexProximal);
+  VRMC::WriteField("rightIndexIntermediate", json,
+                   in_value.rightIndexIntermediate);
+  VRMC::WriteField("rightIndexDistal", json, in_value.rightIndexDistal);
+  VRMC::WriteField("rightMiddleProximal", json, in_value.rightMiddleProximal);
+  VRMC::WriteField("rightMiddleIntermediate", json,
+                   in_value.rightMiddleIntermediate);
+  VRMC::WriteField("rightMiddleDistal", json, in_value.rightMiddleDistal);
+  VRMC::WriteField("rightRingProximal", json, in_value.rightRingProximal);
+  VRMC::WriteField("rightRingIntermediate", json,
+                   in_value.rightRingIntermediate);
+  VRMC::WriteField("rightRingDistal", json, in_value.rightRingDistal);
+  VRMC::WriteField("rightLittleProximal", json, in_value.rightLittleProximal);
+  VRMC::WriteField("rightLittleIntermediate", json,
+                   in_value.rightLittleIntermediate);
+  VRMC::WriteField("rightLittleDistal", json, in_value.rightLittleDistal);
+}
+inline void to_json(nlohmann::json &json, VrmaHumanoid const &in_value) {
+  VRMC::WriteField("humanBones", json, in_value.humanBones);
+}
+inline void to_json(nlohmann::json &json, VrmaExpression const &in_value) {
+  VRMC::WriteField("node", json, in_value.node, static_cast<uint32_t>(0));
+}
+inline void to_json(nlohmann::json &json,
+                    VrmaExpressions::Preset const &in_value) {
+  VRMC::WriteField("happy", json, in_value.happy);
+  VRMC::WriteField("angry", json, in_value.angry);
+  VRMC::WriteField("sad", json, in_value.sad);
+  VRMC::WriteField("relaxed", json, in_value.relaxed);
+  VRMC::WriteField("surprised", json, in_value.surprised);
+  VRMC::WriteField("aa", json, in_value.aa);
+  VRMC::WriteField("ih", json, in_value.ih);
+  VRMC::WriteField("ou", json, in_value.ou);
+  VRMC::WriteField("ee", json, in_value.ee);
+  VRMC::WriteField("oh", json, in_value.oh);
+  VRMC::WriteField("blink", json, in_value.blink);
+  VRMC::WriteField("blinkLeft", json, in_value.blinkLeft);
+  VRMC::WriteField("blinkRight", json, in_value.blinkRight);
+  VRMC::WriteField("neutral", json, in_value.neutral);
+}
+inline void to_json(nlohmann::json &json, VrmaExpressions const &in_value) {
+  VRMC::WriteField("preset", json, in_value.preset);
+  VRMC::WriteField("custom", json, in_value.custom);
+}
+inline void to_json(nlohmann::json &json, VrmaLookAt const &in_value) {
+  VRMC::WriteField("node", json, in_value.node, static_cast<uint32_t>(0));
+  VRMC::WriteField("offsetFromHeadBone", json, in_value.offsetFromHeadBone);
+}
+inline void to_json(nlohmann::json &json, VrmAnimation const &in_value) {
+  VRMC::WriteField("specVersion", json, in_value.specVersion, {});
+  VRMC::WriteField("humanoid", json, in_value.humanoid);
+  VRMC::WriteField("expressions", json, in_value.expressions);
+  VRMC::WriteField("lookAt", json, in_value.lookAt);
 }
 inline void from_json(nlohmann::json const &json, TextureInfo &out_value) {
   VRMC::ReadRequiredField("index", json, out_value.index);
@@ -2278,10 +2544,10 @@ inline void from_json(nlohmann::json const &json, HumanBones &out_value) {
   VRMC::ReadRequiredField("rightUpperArm", json, out_value.rightUpperArm);
   VRMC::ReadRequiredField("rightLowerArm", json, out_value.rightLowerArm);
   VRMC::ReadRequiredField("rightHand", json, out_value.rightHand);
+  VRMC::ReadOptionalField("leftThumbMetacarpal", json,
+                          out_value.leftThumbMetacarpal);
   VRMC::ReadOptionalField("leftThumbProximal", json,
                           out_value.leftThumbProximal);
-  VRMC::ReadOptionalField("leftThumbIntermediate", json,
-                          out_value.leftThumbIntermediate);
   VRMC::ReadOptionalField("leftThumbDistal", json, out_value.leftThumbDistal);
   VRMC::ReadOptionalField("leftIndexProximal", json,
                           out_value.leftIndexProximal);
@@ -2302,10 +2568,10 @@ inline void from_json(nlohmann::json const &json, HumanBones &out_value) {
   VRMC::ReadOptionalField("leftLittleIntermediate", json,
                           out_value.leftLittleIntermediate);
   VRMC::ReadOptionalField("leftLittleDistal", json, out_value.leftLittleDistal);
+  VRMC::ReadOptionalField("rightThumbMetacarpal", json,
+                          out_value.rightThumbMetacarpal);
   VRMC::ReadOptionalField("rightThumbProximal", json,
                           out_value.rightThumbProximal);
-  VRMC::ReadOptionalField("rightThumbIntermediate", json,
-                          out_value.rightThumbIntermediate);
   VRMC::ReadOptionalField("rightThumbDistal", json, out_value.rightThumbDistal);
   VRMC::ReadOptionalField("rightIndexProximal", json,
                           out_value.rightIndexProximal);
@@ -2460,6 +2726,152 @@ inline void from_json(nlohmann::json const &json, Vrm &out_value) {
   VRMC::ReadOptionalField("firstPerson", json, out_value.firstPerson);
   VRMC::ReadOptionalField("lookAt", json, out_value.lookAt);
   VRMC::ReadOptionalField("expressions", json, out_value.expressions);
+}
+inline void from_json(nlohmann::json const &json,
+                      ExtendedColliderShape &out_value) {
+  VRMC::ReadOptionalField("sphere", json, out_value.sphere);
+  VRMC::ReadOptionalField("capsule", json, out_value.capsule);
+  VRMC::ReadOptionalField("plane", json, out_value.plane);
+}
+inline void from_json(nlohmann::json const &json,
+                      ExtendedColliderShape::Sphere &out_value) {
+  VRMC::ReadOptionalField("offset", json, out_value.offset);
+  VRMC::ReadOptionalField("radius", json, out_value.radius);
+  VRMC::ReadOptionalField("inside", json, out_value.inside);
+}
+inline void from_json(nlohmann::json const &json,
+                      ExtendedColliderShape::Capsule &out_value) {
+  VRMC::ReadOptionalField("offset", json, out_value.offset);
+  VRMC::ReadOptionalField("radius", json, out_value.radius);
+  VRMC::ReadOptionalField("tail", json, out_value.tail);
+  VRMC::ReadOptionalField("inside", json, out_value.inside);
+}
+inline void from_json(nlohmann::json const &json,
+                      ExtendedColliderShape::Plane &out_value) {
+  VRMC::ReadOptionalField("offset", json, out_value.offset);
+  VRMC::ReadOptionalField("normal", json, out_value.normal);
+}
+inline void from_json(nlohmann::json const &json,
+                      SpringBoneExtendedCollider &out_value) {
+  VRMC::ReadRequiredField("specVersion", json, out_value.specVersion);
+  VRMC::ReadOptionalField("shape", json, out_value.shape);
+}
+inline void from_json(nlohmann::json const &json, VrmaHumanBone &out_value) {
+  VRMC::ReadRequiredField("node", json, out_value.node);
+}
+inline void from_json(nlohmann::json const &json, VrmaHumanBones &out_value) {
+  VRMC::ReadRequiredField("hips", json, out_value.hips);
+  VRMC::ReadRequiredField("spine", json, out_value.spine);
+  VRMC::ReadOptionalField("chest", json, out_value.chest);
+  VRMC::ReadOptionalField("upperChest", json, out_value.upperChest);
+  VRMC::ReadOptionalField("neck", json, out_value.neck);
+  VRMC::ReadRequiredField("head", json, out_value.head);
+  VRMC::ReadOptionalField("jaw", json, out_value.jaw);
+  VRMC::ReadRequiredField("leftUpperLeg", json, out_value.leftUpperLeg);
+  VRMC::ReadRequiredField("leftLowerLeg", json, out_value.leftLowerLeg);
+  VRMC::ReadRequiredField("leftFoot", json, out_value.leftFoot);
+  VRMC::ReadOptionalField("leftToes", json, out_value.leftToes);
+  VRMC::ReadRequiredField("rightUpperLeg", json, out_value.rightUpperLeg);
+  VRMC::ReadRequiredField("rightLowerLeg", json, out_value.rightLowerLeg);
+  VRMC::ReadRequiredField("rightFoot", json, out_value.rightFoot);
+  VRMC::ReadOptionalField("rightToes", json, out_value.rightToes);
+  VRMC::ReadOptionalField("leftShoulder", json, out_value.leftShoulder);
+  VRMC::ReadRequiredField("leftUpperArm", json, out_value.leftUpperArm);
+  VRMC::ReadRequiredField("leftLowerArm", json, out_value.leftLowerArm);
+  VRMC::ReadRequiredField("leftHand", json, out_value.leftHand);
+  VRMC::ReadOptionalField("rightShoulder", json, out_value.rightShoulder);
+  VRMC::ReadRequiredField("rightUpperArm", json, out_value.rightUpperArm);
+  VRMC::ReadRequiredField("rightLowerArm", json, out_value.rightLowerArm);
+  VRMC::ReadRequiredField("rightHand", json, out_value.rightHand);
+  VRMC::ReadOptionalField("leftThumbMetacarpal", json,
+                          out_value.leftThumbMetacarpal);
+  VRMC::ReadOptionalField("leftThumbProximal", json,
+                          out_value.leftThumbProximal);
+  VRMC::ReadOptionalField("leftThumbDistal", json, out_value.leftThumbDistal);
+  VRMC::ReadOptionalField("leftIndexProximal", json,
+                          out_value.leftIndexProximal);
+  VRMC::ReadOptionalField("leftIndexIntermediate", json,
+                          out_value.leftIndexIntermediate);
+  VRMC::ReadOptionalField("leftIndexDistal", json, out_value.leftIndexDistal);
+  VRMC::ReadOptionalField("leftMiddleProximal", json,
+                          out_value.leftMiddleProximal);
+  VRMC::ReadOptionalField("leftMiddleIntermediate", json,
+                          out_value.leftMiddleIntermediate);
+  VRMC::ReadOptionalField("leftMiddleDistal", json, out_value.leftMiddleDistal);
+  VRMC::ReadOptionalField("leftRingProximal", json, out_value.leftRingProximal);
+  VRMC::ReadOptionalField("leftRingIntermediate", json,
+                          out_value.leftRingIntermediate);
+  VRMC::ReadOptionalField("leftRingDistal", json, out_value.leftRingDistal);
+  VRMC::ReadOptionalField("leftLittleProximal", json,
+                          out_value.leftLittleProximal);
+  VRMC::ReadOptionalField("leftLittleIntermediate", json,
+                          out_value.leftLittleIntermediate);
+  VRMC::ReadOptionalField("leftLittleDistal", json, out_value.leftLittleDistal);
+  VRMC::ReadOptionalField("rightThumbMetacarpal", json,
+                          out_value.rightThumbMetacarpal);
+  VRMC::ReadOptionalField("rightThumbProximal", json,
+                          out_value.rightThumbProximal);
+  VRMC::ReadOptionalField("rightThumbDistal", json, out_value.rightThumbDistal);
+  VRMC::ReadOptionalField("rightIndexProximal", json,
+                          out_value.rightIndexProximal);
+  VRMC::ReadOptionalField("rightIndexIntermediate", json,
+                          out_value.rightIndexIntermediate);
+  VRMC::ReadOptionalField("rightIndexDistal", json, out_value.rightIndexDistal);
+  VRMC::ReadOptionalField("rightMiddleProximal", json,
+                          out_value.rightMiddleProximal);
+  VRMC::ReadOptionalField("rightMiddleIntermediate", json,
+                          out_value.rightMiddleIntermediate);
+  VRMC::ReadOptionalField("rightMiddleDistal", json,
+                          out_value.rightMiddleDistal);
+  VRMC::ReadOptionalField("rightRingProximal", json,
+                          out_value.rightRingProximal);
+  VRMC::ReadOptionalField("rightRingIntermediate", json,
+                          out_value.rightRingIntermediate);
+  VRMC::ReadOptionalField("rightRingDistal", json, out_value.rightRingDistal);
+  VRMC::ReadOptionalField("rightLittleProximal", json,
+                          out_value.rightLittleProximal);
+  VRMC::ReadOptionalField("rightLittleIntermediate", json,
+                          out_value.rightLittleIntermediate);
+  VRMC::ReadOptionalField("rightLittleDistal", json,
+                          out_value.rightLittleDistal);
+}
+inline void from_json(nlohmann::json const &json, VrmaHumanoid &out_value) {
+  VRMC::ReadRequiredField("humanBones", json, out_value.humanBones);
+}
+inline void from_json(nlohmann::json const &json, VrmaExpression &out_value) {
+  VRMC::ReadRequiredField("node", json, out_value.node);
+}
+inline void from_json(nlohmann::json const &json,
+                      VrmaExpressions::Preset &out_value) {
+  VRMC::ReadOptionalField("happy", json, out_value.happy);
+  VRMC::ReadOptionalField("angry", json, out_value.angry);
+  VRMC::ReadOptionalField("sad", json, out_value.sad);
+  VRMC::ReadOptionalField("relaxed", json, out_value.relaxed);
+  VRMC::ReadOptionalField("surprised", json, out_value.surprised);
+  VRMC::ReadOptionalField("aa", json, out_value.aa);
+  VRMC::ReadOptionalField("ih", json, out_value.ih);
+  VRMC::ReadOptionalField("ou", json, out_value.ou);
+  VRMC::ReadOptionalField("ee", json, out_value.ee);
+  VRMC::ReadOptionalField("oh", json, out_value.oh);
+  VRMC::ReadOptionalField("blink", json, out_value.blink);
+  VRMC::ReadOptionalField("blinkLeft", json, out_value.blinkLeft);
+  VRMC::ReadOptionalField("blinkRight", json, out_value.blinkRight);
+  VRMC::ReadOptionalField("neutral", json, out_value.neutral);
+}
+inline void from_json(nlohmann::json const &json, VrmaExpressions &out_value) {
+  VRMC::ReadOptionalField("preset", json, out_value.preset);
+  VRMC::ReadOptionalField("custom", json, out_value.custom);
+}
+inline void from_json(nlohmann::json const &json, VrmaLookAt &out_value) {
+  VRMC::ReadRequiredField("node", json, out_value.node);
+  VRMC::ReadOptionalField("offsetFromHeadBone", json,
+                          out_value.offsetFromHeadBone);
+}
+inline void from_json(nlohmann::json const &json, VrmAnimation &out_value) {
+  VRMC::ReadRequiredField("specVersion", json, out_value.specVersion);
+  VRMC::ReadOptionalField("humanoid", json, out_value.humanoid);
+  VRMC::ReadOptionalField("expressions", json, out_value.expressions);
+  VRMC::ReadOptionalField("lookAt", json, out_value.lookAt);
 }
 } // namespace VRMC_VRM_1_0
 #endif

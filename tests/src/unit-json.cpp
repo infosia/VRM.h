@@ -73,6 +73,85 @@ TEST_CASE("VRM 1.0 (fx-gltf)") {
   }
 }
 
+TEST_CASE("VRM 1.0 VRMC_springBone_extended_collider") {
+  const auto src = nlohmann::json::parse(R"({
+    "specVersion": "1.0",
+    "shape": {
+      "sphere": { "offset": [0, 0.1, 0], "radius": 0.5, "inside": true }
+    }
+  })");
+
+  VRMC_VRM_1_0::SpringBoneExtendedCollider collider;
+  VRMC_VRM_1_0::from_json(src, collider);
+
+  REQUIRE(collider.specVersion == "1.0");
+  REQUIRE(collider.shape.sphere.offset[1] == 0.1f);
+  REQUIRE(collider.shape.sphere.radius == 0.5f);
+  REQUIRE(collider.shape.sphere.inside);
+  REQUIRE(collider.shape.plane.normal[2] == 1.f);
+
+  nlohmann::json out;
+  VRMC_VRM_1_0::to_json(out, collider);
+
+  REQUIRE(out["specVersion"] == "1.0");
+  REQUIRE(out["shape"]["sphere"]["radius"] == 0.5f);
+  REQUIRE(out["shape"]["sphere"]["inside"] == true);
+}
+
+TEST_CASE("VRM 1.0 VRMC_vrm_animation") {
+  const auto src = nlohmann::json::parse(R"({
+    "specVersion": "1.0",
+    "humanoid": {
+      "humanBones": {
+        "hips": { "node": 1 },
+        "spine": { "node": 2 },
+        "head": { "node": 3 },
+        "leftUpperLeg": { "node": 4 },
+        "leftLowerLeg": { "node": 5 },
+        "leftFoot": { "node": 6 },
+        "rightUpperLeg": { "node": 7 },
+        "rightLowerLeg": { "node": 8 },
+        "rightFoot": { "node": 9 },
+        "leftUpperArm": { "node": 10 },
+        "leftLowerArm": { "node": 11 },
+        "leftHand": { "node": 12 },
+        "rightUpperArm": { "node": 13 },
+        "rightLowerArm": { "node": 14 },
+        "rightHand": { "node": 15 },
+        "leftThumbMetacarpal": { "node": 16 }
+      }
+    },
+    "expressions": {
+      "preset": {
+        "happy": { "node": 20 }
+      }
+    },
+    "lookAt": {
+      "node": 30,
+      "offsetFromHeadBone": [0, 0.06, 0]
+    }
+  })");
+
+  VRMC_VRM_1_0::VrmAnimation anim;
+  VRMC_VRM_1_0::from_json(src, anim);
+
+  REQUIRE(anim.specVersion == "1.0");
+  REQUIRE(anim.humanoid.humanBones.hips.node == 1);
+  REQUIRE(anim.humanoid.humanBones.rightHand.node == 15);
+  REQUIRE(anim.humanoid.humanBones.leftThumbMetacarpal.node == 16);
+  REQUIRE(anim.expressions.preset.happy.node == 20);
+  REQUIRE(anim.lookAt.node == 30);
+  REQUIRE(anim.lookAt.offsetFromHeadBone[1] == 0.06f);
+
+  nlohmann::json out;
+  VRMC_VRM_1_0::to_json(out, anim);
+
+  REQUIRE(out["specVersion"] == "1.0");
+  REQUIRE(out["humanoid"]["humanBones"]["hips"]["node"] == 1);
+  REQUIRE(out["expressions"]["preset"]["happy"]["node"] == 20);
+  REQUIRE(out["lookAt"]["node"] == 30);
+}
+
 TEST_CASE("VRM 0.x (cgltf)") {
   cgltf_options options = {};
   cgltf_data *data = NULL;

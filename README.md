@@ -10,6 +10,8 @@ C++ header-only library for simple serialization/deserialization of [VRM](https:
 - [x] VRMC_node_constraint extension
 - [x] VRMC_materials_mtoon extension
 - [x] VRMC_materials_hdr_emissiveMultiplier extension
+- [x] VRMC_springBone_extended_collider extension
+- [x] VRMC_vrm_animation extension
 
 ## Dependencies
 * [nlohmann::json](https://github.com/nlohmann/json)

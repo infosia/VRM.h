@@ -9,7 +9,12 @@
 
 const fs = require('fs');
 const path = require('path');
-const basepath = path.join(__dirname, '..', 'schema');
+
+const specpath = process.argv[2];
+if (!specpath) {
+  console.error('Usage: node sync.js <path-to-vrm-specification>');
+  process.exit(1);
+}
 
 const files = [
 '02.mtoon.shadingShiftTexture.schema.json',
@@ -47,21 +52,21 @@ files.forEach(dst => {
   if (/^\d+\./.test(dst)) {
     src = dst.substring(3);
   }
-  let dir = 'VRMC_vrm-1.0-beta';
+  let dir = 'VRMC_vrm-1.0';
   if (/^VRMC_node_constraint/.test(src)) {
-    dir = 'VRMC_node_constraint-1.0_beta';
-  } else if (/^VRMC_springBone./.test(src)) {
-    dir = 'VRMC_springBone-1.0-beta';
+    dir = 'VRMC_node_constraint-1.0';
+  } else if (/^VRMC_springBone\./.test(src)) {
+    dir = 'VRMC_springBone-1.0';
   } else if (/^mtoon/.test(src)) {
-    dir = 'VRMC_materials_mtoon-1.0-beta';
+    dir = 'VRMC_materials_mtoon-1.0';
   } else if (/^VRMC_materials_mtoon/.test(src)) {
-    dir = 'VRMC_materials_mtoon-1.0-beta';
+    dir = 'VRMC_materials_mtoon-1.0';
   } else if (/^VRMC_materials_hdr_/.test(src)) {
     dir = 'VRMC_materials_hdr_emissiveMultiplier-1.0';
   }
 
-  let dstPath = path.join('..', 'schema', '1.0', dst);
-  let srcPath = path.join('..', '..', 'vrm-specification', 'specification',  dir, 'schema', src);
+  let dstPath = path.join(__dirname, '..', 'schema', '1.0', dst);
+  let srcPath = path.join(specpath, 'specification', dir, 'schema', src);
 
   fs.copyFileSync(srcPath, dstPath);
 });
